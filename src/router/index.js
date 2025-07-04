@@ -72,7 +72,7 @@ router.beforeEach((to, from, next) => {
   const requiresAuth = to.meta.requiresAuth
   const allowedRole = to.meta.role
 
-  if (requiresAuth && !store.token) {
+  if (requiresAuth && !store.user) {
     next('/login')
   } else if (allowedRole && store.user?.role !== allowedRole) {
     next('/teams')

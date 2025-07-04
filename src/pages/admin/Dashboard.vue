@@ -44,7 +44,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import instance from '@/plugins/axios'
 
 const stats = ref({
   totals: { users: 0, players: 0, teams: 0, matches: 0, referees: 0, news: 0 },
@@ -52,6 +52,7 @@ const stats = ref({
 })
 
 const newsList = ref([])
+const csrfToken = ref('')
 
 const iconMap = {
   users: 'fas fa-user',
@@ -80,9 +81,9 @@ function formatDate(date) {
 
 async function fetchStats() {
   try {
-    const res = await axios.get('http://localhost:3000/admin/dashboard', {
+    const res = await instance.get('/admin/dashboard', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
+        'X-CSRF-Token': csrfToken.value
       }
     })
     stats.value = res.data
@@ -93,16 +94,27 @@ async function fetchStats() {
 
 async function fetchNews() {
   try {
-    const res = await axios.get('http://localhost:3000/news')
-    newsList.value = res.data.slice(0, 5) // Solo las 5 últimas noticias
+    const res = await instance.get('/news', {
+      headers: {
+        'X-CSRF-Token': csrfToken.value
+      }
+    })
+    newsList.value = res.data.slice(0, 5)
   } catch (error) {
     console.error('Error al cargar noticias:', error)
   }
 }
 
-onMounted(() => {
-  fetchStats()
-  fetchNews()
+onMounted(async () => {
+  try {
+    const res = await instance.get('/api/csrf-token')
+    csrfToken.value = res.data.csrfToken
+    instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+    await fetchStats()
+    await fetchNews()
+  } catch (error) {
+    console.error('No se pudo obtener el token CSRF', error)
+  }
 })
 </script>
 

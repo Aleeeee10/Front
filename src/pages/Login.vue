@@ -100,7 +100,6 @@ const handleLogin = async () => {
     // Guarda el usuario en el store
     userStore.setUser(response.data.user)
 
-    // Redirige según el rol
     if (response.data.user.role === 'admin') {
       router.push('/admin')
     } else {
