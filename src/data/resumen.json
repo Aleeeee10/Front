@@ -1,0 +1,291 @@
+{
+    "highlightedPlayers": [
+        {
+            "name": "Lionel Messi",
+            "team": "FC Barcelona",
+            "position": "Delantero",
+            "goals": 30,
+            "assists": 12,
+            "matches": 25,
+            "url": "/jugadores/lionel-messi"
+        },
+        {
+            "name": "Cristiano Ronaldo",
+            "team": "Juventus",
+            "position": "Delantero",
+            "goals": 28,
+            "assists": 10,
+            "matches": 24,
+            "url": "/jugadores/cristiano-ronaldo"
+        },
+        {
+            "name": "Cristiano Ronaldo",
+            "team": "Juventus",
+            "position": "Delantero",
+            "goals": 28,
+            "assists": 10,
+            "matches": 24,
+            "url": "/jugadores/cristiano-ronaldo"
+        },
+        {
+            "name": "Cristiano Ronaldo",
+            "team": "Juventus",
+            "position": "Delantero",
+            "goals": 28,
+            "assists": 10,
+            "matches": 24,
+            "url": "/jugadores/cristiano-ronaldo"
+        },
+        {
+            "name": "Cristiano Ronaldo",
+            "team": "Juventus",
+            "position": "Delantero",
+            "goals": 28,
+            "assists": 10,
+            "matches": 24,
+            "url": "/jugadores/cristiano-ronaldo"
+        },
+        {
+            "name": "Cristiano Ronaldo",
+            "team": "Juventus",
+            "position": "Delantero",
+            "goals": 28,
+            "assists": 10,
+            "matches": 24,
+            "url": "/jugadores/cristiano-ronaldo"
+        }
+    ],
+    "highlightedTeams": [
+        {
+            "name": "FC Barcelona",
+            "logo": "/assets/perfil/FC Barcelona.png",
+            "recentResults": [
+                {
+                    "opponent": "Real Madrid",
+                    "date": "2025-01-25",
+                    "result": "victoria",
+                    "score": "5-1"
+                },
+                {
+                    "opponent": "Atletico Madrid",
+                    "date": "2025-01-26",
+                    "result": "empate",
+                    "score": "2-2"
+                }
+            ]
+        },
+        {
+            "name": "Real Madrid",
+            "logo": "/assets/perfil/Real Madrid.png",
+            "recentResults": [
+                {
+                    "opponent": "Atletico Madrid",
+                    "date": "2025-01-30",
+                    "result": "victoria",
+                    "score": "3-2"
+                },
+                {
+                    "opponent": "FC Barcelona",
+                    "date": "2025-01-31",
+                    "result": "derrota",
+                    "score": "1-5"
+                }
+            ]
+        },
+        {
+            "name": "Real Madrid",
+            "logo": "/assets/perfil/Real Madrid.png",
+            "recentResults": [
+                {
+                    "opponent": "Atletico Madrid",
+                    "date": "2025-01-30",
+                    "result": "victoria",
+                    "score": "3-2"
+                },
+                {
+                    "opponent": "FC Barcelona",
+                    "date": "2025-01-31",
+                    "result": "derrota",
+                    "score": "1-5"
+                }
+            ]
+        },
+        {
+            "name": "Real Madrid",
+            "logo": "/assets/perfil/Real Madrid.png",
+            "recentResults": [
+                {
+                    "opponent": "Atletico Madrid",
+                    "date": "2025-01-30",
+                    "result": "victoria",
+                    "score": "3-2"
+                },
+                {
+                    "opponent": "FC Barcelona",
+                    "date": "2025-01-31",
+                    "result": "derrota",
+                    "score": "1-5"
+                }
+            ]
+        },
+        {
+            "name": "Real Madrid",
+            "logo": "/assets/perfil/Real Madrid.png",
+            "recentResults": [
+                {
+                    "opponent": "Atletico Madrid",
+                    "date": "2025-01-30",
+                    "result": "victoria",
+                    "score": "3-2"
+                },
+                {
+                    "opponent": "FC Barcelona",
+                    "date": "2025-01-31",
+                    "result": "derrota",
+                    "score": "1-5"
+                }
+            ]
+        }
+    ],
+    "upcomingMatches": [
+        {
+            "team1": {
+                "name": "FC Barcelona",
+                "logo": "/assets/perfil/FC Barcelona.png"
+            },
+            "team2": {
+                "name": "Real Betis",
+                "logo": "/assets/perfil/Real Betis.png"
+            },
+            "date": "2025-02-01",
+            "league": "LaLiga"
+        },
+        {
+            "team1": {
+                "name": "Real Madrid",
+                "logo": "/assets/perfil/Real Madrid.png"
+            },
+            "team2": {
+                "name": "Atletico Madrid",
+                "logo": "/assets/perfil/Atletico Madrid.png"
+            },
+            "date": "2025-02-02",
+            "league": "LaLiga"
+        },
+        {
+            "league": "LaLiga",
+            "team1": {
+                "name": "FC Barcelona",
+                "logo": "/assets/perfil/FC Barcelona.png",
+                "score": 5
+            },
+            "team2": {
+                "name": "Real Betis",
+                "logo": "/assets/perfil/Real Betis.png",
+                "score": 1
+            },
+            "date": "25/01/2025"
+        },
+        {
+            "league": "LaLiga",
+            "team1": {
+                "name": "Real Madrid",
+                "logo": "/assets/perfil/Real Madrid.png",
+                "score": 3
+            },
+            "team2": {
+                "name": "Atletico Madrid",
+                "logo": "/assets/perfil/Atletico Madrid.png",
+                "score": 2
+            },
+            "date": "26/01/2025"
+        },
+        {
+            "league": "LaLiga",
+            "team1": {
+                "name": "FC Barcelona",
+                "logo": "/assets/perfil/FC Barcelona.png",
+                "score": 5
+            },
+            "team2": {
+                "name": "Real Betis",
+                "logo": "/assets/perfil/Real Betis.png",
+                "score": 1
+            },
+            "date": "25/01/2025"
+        }
+    ],
+    "recentResults": [
+        {
+            "team1": {
+                "name": "FC Barcelona",
+                "logo": "/assets/perfil/FC Barcelona.png",
+                "score": 5
+            },
+            "team2": {
+                "name": "Real Betis",
+                "logo": "/assets/perfil/Real Betis.png",
+                "score": 1
+            },
+            "date": "2025-01-25",
+            "league": "LaLiga"
+        },
+        {
+            "team1": {
+                "name": "Real Madrid",
+                "logo": "/assets/perfil/Real Madrid.png",
+                "score": 3
+            },
+            "team2": {
+                "name": "Atletico Madrid",
+                "logo": "/assets/perfil/Atletico Madrid.png",
+                "score": 2
+            },
+            "date": "2025-01-26",
+            "league": "LaLiga"
+        },
+        {
+            "team1": {
+                "name": "Real Madrid",
+                "logo": "/assets/perfil/Real Madrid.png",
+                "score": 3
+            },
+            "team2": {
+                "name": "Atletico Madrid",
+                "logo": "/assets/perfil/Atletico Madrid.png",
+                "score": 2
+            },
+            "date": "2025-01-26",
+            "league": "LaLiga"
+        },
+        {
+            "team1": {
+                "name": "Real Madrid",
+                "logo": "/assets/perfil/Real Madrid.png",
+                "score": 3
+            },
+            "team2": {
+                "name": "Atletico Madrid",
+                "logo": "/assets/perfil/Atletico Madrid.png",
+                "score": 2
+            },
+            "date": "2025-01-26",
+            "league": "LaLiga"
+        },
+        {
+            "team1": {
+                "name": "Real Madrid",
+                "logo": "/assets/perfil/Real Madrid.png",
+                "score": 3
+            },
+            "team2": {
+                "name": "Atletico Madrid",
+                "logo": "/assets/perfil/Atletico Madrid.png",
+                "score": 2
+            },
+            "date": "2025-01-26",
+            "league": "LaLiga"
+        }
+        
+    ]
+}

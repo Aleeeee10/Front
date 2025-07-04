@@ -1,0 +1,31 @@
+/* assets/base.css */
+:root {
+  --main-color: #00ffc1;
+  --main-font : Arial, sans-serif;
+}
+[data-theme='dark']  { color-scheme: dark; }
+body {
+  color: var(--text-color, #eee);
+  font-family: var(--main-font);
+}
+button,
+a         { accent-color: var(--main-color); }
+
+.upcoming-matches-carousel {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.upcoming-matches-carousel.fast {
+  transform: scale(1.05); /* Efecto de zoom durante la velocidad rápida */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+.toggle-card{
+  gap: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.toggle-card:hover  {
+  cursor: pointer;
+  transform: scale(1.05);
+  border-color: var(--color-black);
+}

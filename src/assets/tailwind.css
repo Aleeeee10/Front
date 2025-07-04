@@ -1,0 +1,652 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+  --primary-color: green;
+  --secondary-color: #379777;
+  --bg-cards-dark: #2b2b2b;
+  --bg-cards: #e4e4e4;
+  --bg-body: #A6CDC6;
+  --tertiary-color: #FFA07A;
+  --dark-color: #333;
+  --light-color: #fff;
+  --color-black: #000;
+  --border-color-dark: #e1ff57;
+  --border-color-card: #ccc;
+}
+ 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+
+
+/* #app {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+}
+
+#background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-image: url('../../public/assets/perfil/fondo.jpg');
+  filter: blur(5px);
+  z-index: 0;
+} */
+
+/* body {
+  background-color: var(--light-color);
+  color: var(--dark-color);
+} */
+
+
+h3 {
+  color: var(--secondary-color);
+}
+
+/* navbar normal */
+
+.active-link {
+  color: var(--text-primary);
+  border-bottom-width: 2px;
+  border-color: var(--border-color-card);
+}
+
+.dark .active-link {
+  color: var(--text-primary-dark);
+  border-color: var(--border-color-dark);
+}
+
+/* navbar responsivo */
+
+.nav-links a.active {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.content {
+  min-height: 100vh;  
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.toggle-button:hover {
+  transform: scale(1.05);
+}
+.toggle-card{
+  gap: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.toggle-card:hover  {
+  cursor: pointer;
+  transform: scale(1.05);
+  border-color: var(--color-black);
+}
+
+
+.toggle-row{
+  gap: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.toggle-row:hover{
+  transform: scale(1.01);
+  border-color: var(--color-black);
+}
+
+.resultados-container {
+  padding: 3rem;
+}
+
+
+.filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter span {
+  font-size: 0.9rem;
+}
+
+.filter select {
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: fit-content;
+}
+
+.match-card {
+  background: var(--bg-cards);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  border: 1px solid var(--border-color-card);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.match-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.match-info {
+  display: flex;
+  padding-top: 1rem;
+  text-align: center;
+}
+.team-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  gap: 3rem;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.team-name {
+  font-weight: bold;
+}
+
+.score {
+  /* font-size: 1.2rem; */
+  font-weight: bold;
+}
+
+.scoreinf {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.score {
+  /* font-size: 1.2rem; */
+  font-weight: bold;
+  min-width: 15px;
+  text-align: center;
+}
+
+.divider {
+  width: 1px;
+  height: 30px;
+}
+
+.date {
+  color: #666;
+}
+
+.date,
+.status {
+  font-size: 0.9rem;
+}
+
+.league {
+  font-size: 1em;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  color: var(--dark-colorr);
+  padding: 10px 20px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; 
+}
+
+.logo {
+  height: 50px;
+  width: auto;
+}
+
+.app-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-left: 10px;
+
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  justify-content: center; 
+
+}
+
+.nav-links li {
+  padding: 0.5rem;
+}
+
+.nav-links li span {
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px; 
+  display: block; /* Ensure the link takes up the full space of the li */
+  padding: 0.5rem; /* Add padding to the link itself */
+  border-radius: 3px; /* Add border-radius to the link */
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition */
+}
+
+.nav-links li ::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  transition: width 0.3s;
+}
+
+
+.nav-links-2 li :hover,
+.nav-links-2 li .active {
+  border-bottom: 2px solid var(--border-color-card);
+  padding-bottom: 0.5rem;
+}
+
+
+.dropdown-menu {
+  /* position: absolute; */
+  top: 100%;
+  left: 0;
+  right: 0;
+  border: 1px solid #ccc;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 200px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-menu li {
+  padding: 10px;
+}
+
+.dropdown-menu li a {
+  color: black;
+  text-decoration: none;
+  display: block;
+}
+
+
+.division-menu {
+  background-color: white;
+  border: 1px solid #ccc;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 200px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.division-menu li {
+  padding: 10px;
+}
+
+.division-menu li a {
+  color: black;
+  text-decoration: none;
+  display: block;
+}
+
+.division-menu li a:hover {
+  background-color: #f0f0f0;
+}
+
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle {
+  position: relative;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle input {
+  display: none;
+}
+
+.toggle label {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 3px solid var(--primary-color);
+  border-radius: 9999px;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.toggle input:checked + label:before {
+  transform: translateX(22px);
+}
+
+.toggle input:checked + label {
+  border-color: #f5f5f5;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.standings-table th,
+.standings-table td {
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.standings-table th {
+  font-weight: bold;
+}
+
+.table-image {
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+}
+
+.background {
+  padding: 20px;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  padding-left: 5px;
+}
+
+.team-logo {
+  width: auto;
+  height: 4rem;
+  margin-right: 10px;
+}
+
+.back-button {
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.header {
+  font-size: 20px;
+  display: flex;
+  border-radius: 15px;
+  align-items: center;
+  padding: 20px;
+}
+
+/* jugadores */
+.main-container {
+  padding: 20px;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+
+.more-info-button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.contact-functions {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-box, .functions-box {
+  margin-bottom: 20px;
+}
+
+.trophies-section {
+  margin-top: 20px;
+}
+
+.trophy-group {
+  margin-bottom: 20px;
+}
+
+.trophies {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.trophy {
+  text-align: center;
+}
+
+/* equipos */
+
+.fc-barcelona-page {
+  padding: 20px;
+}
+
+
+.logo {
+  width: 100px;
+  height: auto;
+}
+
+.btn-ver-jugadores {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.main-content {
+  margin-top: 20px;
+}
+
+.resultado-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+
+.clasificaciones table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.clasificaciones th, .clasificaciones td {
+  padding: 8px;
+  text-align: left;
+}
+
+.clasificaciones th {
+  font-weight: bold;
+}
+
+/* arbitros */
+
+
+
+/* login */
+.login-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.login-button {
+  width: 100%;
+  padding: 0.75rem;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background-color: var(--secondary-color);
+}
+
+/* registrar usario */
+
+.register-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.register-button {
+  width: 100%;
+  padding: 0.75rem;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.register-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.tabla-goles td {
+  padding: 1rem;
+}
+
+input:checked + .toggle .toggle-circle {
+  transform: translateX(22px); /* Mueve el círculo hacia la derecha */
+}
+
+.slide-right-enter-active, .slide-right-leave-active {
+  transition: transform 0.3s ease-in-out;
+}
+
+.slide-right-enter-from {
+  transform: translateX(100%); /* Inicia desde fuera de la pantalla (derecha) */
+}
+
+.slide-right-leave-to {
+  transform: translateX(100%); /* Se mueve hacia la derecha al cerrar */
+}
+
+.fade-slide-enter-active, .fade-slide-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-slide-enter-from, .fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.upcoming-matches-carousel {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.upcoming-matches-carousel.fast {
+  transform: scale(1.05); /* Efecto de zoom durante la velocidad rápida */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
