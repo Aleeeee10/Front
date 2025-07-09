@@ -68,16 +68,18 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const teams = ref([])
 const standings = ref([])
 const editing = ref(false)
+const csrfToken = ref('')
 
 const form = ref({
   id: null,
   teamId: '',
-  played: 0,
+  games_played: 0,
   wins: 0,
   draws: 0,
   losses: 0,
@@ -86,44 +88,74 @@ const form = ref({
   points: 0
 })
 
+const fetchCsrfToken = async () => {
+  const res = await instance.get('/api/csrf-token', { withCredentials: true })
+  csrfToken.value = res.data.csrfToken
+  instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+}
+
 const fetchTeams = async () => {
-  const res = await axios.get('http://localhost:3000/teams')
-  teams.value = res.data
+  try {
+    const res = await instance.get('/teams', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    teams.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los equipos', 'error')
+  }
 }
 
 const fetchStandings = async () => {
-  const res = await axios.get('http://localhost:3000/standings')
-  standings.value = res.data
+  try {
+    const res = await instance.get('/standings', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    standings.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudo cargar la tabla de posiciones', 'error')
+  }
 }
 
 const handleSubmit = async () => {
   const payload = {
-    team: { id: form.value.teamId },
-    played: form.value.played,
+    teamId: form.value.teamId,
+    games_played: form.value.games_played,
     wins: form.value.wins,
     draws: form.value.draws,
     losses: form.value.losses,
     goals_for: form.value.goals_for,
     goals_against: form.value.goals_against,
-    goal_diff: form.value.goals_for - form.value.goals_against,
     points: form.value.points
   }
 
-  if (editing.value) {
-    await axios.put(`http://localhost:3000/standings/${form.value.id}`, payload)
-  } else {
-    await axios.post('http://localhost:3000/standings', payload)
+  try {
+    if (editing.value) {
+      await instance.put(`/standings/${form.value.id}`, payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Actualizado', 'Posición actualizada correctamente', 'success')
+    } else {
+      await instance.post('/standings', payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Creado', 'Posición creada correctamente', 'success')
+    }
+    resetForm()
+    fetchStandings()
+  } catch (err) {
+    Swal.fire('Error', 'No se pudo guardar la posición', 'error')
   }
-
-  resetForm()
-  fetchStandings()
 }
 
 const editStanding = (row) => {
   form.value = {
     id: row.id,
-    teamId: row.team?.id,
-    played: row.played,
+    teamId: row.teamId || row.team?.id || '',
+    games_played: row.games_played,
     wins: row.wins,
     draws: row.draws,
     losses: row.losses,
@@ -136,8 +168,16 @@ const editStanding = (row) => {
 
 const deleteStanding = async (id) => {
   if (confirm('¿Eliminar este registro?')) {
-    await axios.delete(`http://localhost:3000/standings/${id}`)
-    fetchStandings()
+    try {
+      await instance.delete(`/standings/${id}`, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      fetchStandings()
+      Swal.fire('Eliminado', 'Posición eliminada correctamente', 'success')
+    } catch (err) {
+      Swal.fire('Error', 'No se pudo eliminar la posición', 'error')
+    }
   }
 }
 
@@ -147,7 +187,7 @@ const resetForm = () => {
   form.value = {
     id: null,
     teamId: '',
-    played: 0,
+    games_played: 0,
     wins: 0,
     draws: 0,
     losses: 0,
@@ -158,9 +198,10 @@ const resetForm = () => {
   editing.value = false
 }
 
-onMounted(() => {
-  fetchTeams()
-  fetchStandings()
+onMounted(async () => {
+  await fetchCsrfToken()
+  await fetchTeams()
+  await fetchStandings()
 })
 </script>
 

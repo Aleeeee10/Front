@@ -81,12 +81,14 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const teams = ref([])
 const selectedTeam = ref(null)
 const showTeamDetails = ref(false)
 const loading = ref(true)
+const csrfToken = ref('')
 
 const defaultLogo =
   'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg'
@@ -116,16 +118,28 @@ const closeDetail = () => {
   selectedTeam.value = null
 }
 
+// Obtener CSRF token al montar el componente
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/teams')
-    teams.value = res.data
+    // 1. Obtener CSRF token
+    const res = await instance.get('/api/csrf-token', { withCredentials: true });
+    csrfToken.value = res.data.csrfToken;
+    instance.defaults.headers['X-CSRF-Token'] = csrfToken.value;
+
+    // 2. Cargar equipos
+    const teamsRes = await instance.get('/teams', {
+      headers: {
+        'X-CSRF-Token': csrfToken.value
+      },
+      withCredentials: true
+    });
+    teams.value = teamsRes.data;
   } catch (error) {
-    alert('Error al cargar los equipos')
+    Swal.fire('Error', 'No se pudo cargar los equipos o el token CSRF', 'error');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 </script>
 
 <style scoped>

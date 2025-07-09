@@ -57,12 +57,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const players = ref([])
 const loading = ref(true)
 const defaultPhoto = '/default-avatar.png'
-
+const csrfToken = ref('')
 const selectedPlayer = ref(null)
 const selectPlayer = (player) => {
   selectedPlayer.value = player
@@ -70,10 +71,21 @@ const selectPlayer = (player) => {
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/players')
-    players.value = res.data
+    // 1. Obtener CSRF token
+    const res = await instance.get('/api/csrf-token', { withCredentials: true })
+    csrfToken.value = res.data.csrfToken
+    instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+
+    // 2. Cargar jugadores
+    const playersRes = await instance.get('/players', {
+      headers: {
+        'X-CSRF-Token': csrfToken.value
+      },
+      withCredentials: true
+    })
+    players.value = playersRes.data
   } catch (error) {
-    alert('Error al cargar jugadores')
+    Swal.fire('Error', 'No se pudo cargar los jugadores o el token CSRF', 'error')
   } finally {
     loading.value = false
   }

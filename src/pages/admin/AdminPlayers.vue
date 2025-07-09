@@ -71,11 +71,13 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const players = ref([])
 const teams = ref([])
 const editing = ref(false)
+const csrfToken = ref('')
 
 const form = ref({
   id: null,
@@ -86,30 +88,64 @@ const form = ref({
   teamId: ''
 })
 
+const fetchCsrfToken = async () => {
+  const res = await instance.get('/api/csrf-token', { withCredentials: true })
+  csrfToken.value = res.data.csrfToken
+  instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+}
+
 const fetchPlayers = async () => {
-  const res = await axios.get('http://localhost:3000/players')
-  players.value = res.data
+  try {
+    const res = await instance.get('/players', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    });
+    players.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los jugadores', 'error')
+  }
 }
 
 const fetchTeams = async () => {
-  const res = await axios.get('http://localhost:3000/teams')
-  teams.value = res.data
+  try {
+    const res = await instance.get('/teams', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    teams.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los equipos', 'error')
+  }
 }
 
 const handleSubmit = async () => {
   const payload = {
-    ...form.value,
+    name: form.value.name,
+    photo_url: form.value.photo_url,
+    number: form.value.number,
+    position: form.value.position,
     team: { id: form.value.teamId }
   }
 
-  if (editing.value) {
-    await axios.put(`http://localhost:3000/players/${form.value.id}`, payload)
-  } else {
-    await axios.post('http://localhost:3000/players', payload)
+  try {
+    if (editing.value) {
+      await instance.put(`/players/${form.value.id}`, payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Actualizado', 'Jugador actualizado correctamente', 'success')
+    } else {
+      await instance.post('/players', payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Creado', 'Jugador creado correctamente', 'success')
+    }
+    resetForm()
+    fetchPlayers()
+  } catch (err) {
+    Swal.fire('Error', 'No se pudo guardar el jugador', 'error')
   }
-
-  resetForm()
-  fetchPlayers()
 }
 
 const editPlayer = (player) => {
@@ -130,8 +166,16 @@ const cancelEdit = () => {
 
 const deletePlayer = async (id) => {
   if (confirm('¿Eliminar jugador permanentemente?')) {
-    await axios.delete(`http://localhost:3000/players/${id}`)
-    fetchPlayers()
+    try {
+      await instance.delete(`/players/${id}`, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      fetchPlayers()
+      Swal.fire('Eliminado', 'Jugador eliminado correctamente', 'success')
+    } catch (err) {
+      Swal.fire('Error', 'No se pudo eliminar el jugador', 'error')
+    }
   }
 }
 
@@ -147,9 +191,10 @@ const resetForm = () => {
   editing.value = false
 }
 
-onMounted(() => {
-  fetchPlayers()
-  fetchTeams()
+onMounted(async () => {
+  await fetchCsrfToken()
+  await fetchPlayers()
+  await fetchTeams()
 })
 </script>
 

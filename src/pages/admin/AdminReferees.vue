@@ -5,17 +5,8 @@
     <form @submit.prevent="handleSubmit" class="form">
       <input v-model="form.name" placeholder="Nombre" required />
       <input v-model="form.photo_url" placeholder="URL de foto" />
-      <input v-model="form.city" placeholder="Ciudad" required />
-
-      <select v-model="form.gender" required>
-        <option disabled value="">Género</option>
-        <option>Masculino</option>
-        <option>Femenino</option>
-      </select>
-
-      <input v-model="form.roles" placeholder="Roles (separados por coma)" />
-      <input v-model.number="form.yellow_cards" type="number" placeholder="Tarjetas amarillas" />
-      <input v-model.number="form.red_cards" type="number" placeholder="Tarjetas rojas" />
+      <input v-model="form.nationality" placeholder="Nacionalidad" required />
+      <input v-model.number="form.age" type="number" placeholder="Edad" />
 
       <div class="form-buttons">
         <button type="submit" class="btn btn-submit">
@@ -33,11 +24,8 @@
           <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Ciudad</th>
-            <th>Género</th>
-            <th>Roles</th>
-            <th>🟨</th>
-            <th>🟥</th>
+            <th>Nacionalidad</th>
+            <th>Edad</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -45,11 +33,8 @@
           <tr v-for="ref in referees" :key="ref.id">
             <td>{{ ref.id }}</td>
             <td>{{ ref.name }}</td>
-            <td>{{ ref.city }}</td>
-            <td>{{ ref.gender }}</td>
-            <td>{{ ref.roles?.join(', ') }}</td>
-            <td>{{ ref.yellow_cards }}</td>
-            <td>{{ ref.red_cards }}</td>
+            <td>{{ ref.nationality }}</td>
+            <td>{{ ref.age }}</td>
             <td>
               <button @click="editReferee(ref)" class="btn-icon">✏️</button>
               <button @click="deleteReferee(ref.id)" class="btn-icon">🗑️</button>
@@ -63,41 +48,66 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const referees = ref([])
 const editing = ref(false)
+const csrfToken = ref('')
 
 const form = ref({
   id: null,
   name: '',
   photo_url: '',
-  city: '',
-  gender: '',
-  roles: '',
-  yellow_cards: 0,
-  red_cards: 0
+  nationality: '',
+  age: 0
 })
 
+const fetchCsrfToken = async () => {
+  const res = await instance.get('/api/csrf-token', { withCredentials: true })
+  csrfToken.value = res.data.csrfToken
+  instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+}
+
 const fetchReferees = async () => {
-  const res = await axios.get('http://localhost:3000/referees')
-  referees.value = res.data
+  try {
+    const res = await instance.get('/referees', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    referees.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los árbitros', 'error')
+  }
 }
 
 const handleSubmit = async () => {
   const payload = {
-    ...form.value,
-    roles: form.value.roles.split(',').map(r => r.trim())
+    name: form.value.name,
+    photo_url: form.value.photo_url,
+    nationality: form.value.nationality,
+    age: form.value.age
   }
 
-  if (editing.value) {
-    await axios.put(`http://localhost:3000/referees/${form.value.id}`, payload)
-  } else {
-    await axios.post('http://localhost:3000/referees', payload)
+  try {
+    if (editing.value) {
+      await instance.put(`/referees/${form.value.id}`, payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Actualizado', 'Árbitro actualizado correctamente', 'success')
+    } else {
+      await instance.post('/referees', payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Creado', 'Árbitro creado correctamente', 'success')
+    }
+    resetForm()
+    fetchReferees()
+  } catch (err) {
+    Swal.fire('Error', 'No se pudo guardar el árbitro', 'error')
   }
-
-  resetForm()
-  fetchReferees()
 }
 
 const editReferee = (referee) => {
@@ -105,11 +115,8 @@ const editReferee = (referee) => {
     id: referee.id,
     name: referee.name,
     photo_url: referee.photo_url,
-    city: referee.city,
-    gender: referee.gender,
-    roles: referee.roles.join(', '),
-    yellow_cards: referee.yellow_cards,
-    red_cards: referee.red_cards
+    nationality: referee.nationality,
+    age: referee.age
   }
   editing.value = true
 }
@@ -118,8 +125,16 @@ const cancelEdit = () => resetForm()
 
 const deleteReferee = async (id) => {
   if (confirm('¿Eliminar este árbitro?')) {
-    await axios.delete(`http://localhost:3000/referees/${id}`)
-    fetchReferees()
+    try {
+      await instance.delete(`/referees/${id}`, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      fetchReferees()
+      Swal.fire('Eliminado', 'Árbitro eliminado correctamente', 'success')
+    } catch (err) {
+      Swal.fire('Error', 'No se pudo eliminar el árbitro', 'error')
+    }
   }
 }
 
@@ -128,16 +143,16 @@ const resetForm = () => {
     id: null,
     name: '',
     photo_url: '',
-    city: '',
-    gender: '',
-    roles: '',
-    yellow_cards: 0,
-    red_cards: 0
+    nationality: '',
+    age: 0
   }
   editing.value = false
 }
 
-onMounted(fetchReferees)
+onMounted(async () => {
+  await fetchCsrfToken()
+  await fetchReferees()
+})
 </script>
 
 <style scoped>

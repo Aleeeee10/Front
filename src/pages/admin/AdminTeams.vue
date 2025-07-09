@@ -82,10 +82,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const teams = ref([])
 const editing = ref(false)
+const csrfToken = ref('')
 
 const form = ref({
   id: null,
@@ -94,19 +96,48 @@ const form = ref({
   division: ''
 })
 
+const fetchCsrfToken = async () => {
+  const res = await instance.get('/api/csrf-token')
+  csrfToken.value = res.data.csrfToken
+  // Opcional: setea por defecto para todas las requests
+  instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+}
+
 const fetchTeams = async () => {
-  const res = await axios.get('http://localhost:3000/teams')
-  teams.value = res.data
+  try {
+    const res = await instance.get('/teams', {
+      headers: {
+        'X-CSRF-Token': csrfToken.value
+      }
+    })
+    teams.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los equipos', 'error')
+  }
 }
 
 const handleSubmit = async () => {
-  if (editing.value) {
-    await axios.put(`http://localhost:3000/teams/${form.value.id}`, form.value)
-  } else {
-    await axios.post('http://localhost:3000/teams', form.value)
+  try {
+    if (editing.value) {
+      await instance.put(`/teams/${form.value.id}`, form.value, {
+        headers: {
+          'X-CSRF-Token': csrfToken.value
+        }
+      })
+      Swal.fire('Actualizado', 'Equipo actualizado correctamente', 'success')
+    } else {
+      await instance.post('/teams', form.value, {
+        headers: {
+          'X-CSRF-Token': csrfToken.value
+        }
+      })
+      Swal.fire('Creado', 'Equipo creado correctamente', 'success')
+    }
+    resetForm()
+    fetchTeams()
+  } catch (err) {
+    Swal.fire('Error', 'No se pudo guardar el equipo', 'error')
   }
-  resetForm()
-  fetchTeams()
 }
 
 const editTeam = (team) => {
@@ -116,8 +147,17 @@ const editTeam = (team) => {
 
 const deleteTeam = async (id) => {
   if (confirm('¿Estás seguro de eliminar este equipo?')) {
-    await axios.delete(`http://localhost:3000/teams/${id}`)
-    fetchTeams()
+    try {
+      await instance.delete(`/teams/${id}`, {
+        headers: {
+          'X-CSRF-Token': csrfToken.value
+        }
+      })
+      fetchTeams()
+      Swal.fire('Eliminado', 'Equipo eliminado correctamente', 'success')
+    } catch (err) {
+      Swal.fire('Error', 'No se pudo eliminar el equipo', 'error')
+    }
   }
 }
 
@@ -128,5 +168,8 @@ const resetForm = () => {
   editing.value = false
 }
 
-onMounted(fetchTeams)
+onMounted(async () => {
+  await fetchCsrfToken()
+  await fetchTeams()
+})
 </script>
