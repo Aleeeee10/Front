@@ -21,20 +21,20 @@
       </thead>
       <tbody>
         <tr
-          v-for="(team, index) in standings"
-          :key="team.id"
+          v-for="(row, index) in standings"
+          :key="row.id"
           :style="{ '--i': index }"
         >
           <td>{{ index + 1 }}</td>
-          <td>{{ team.team?.name || 'Sin equipo' }}</td>
-          <td>{{ team.played }}</td>
-          <td>{{ team.wins }}</td>
-          <td>{{ team.draws }}</td>
-          <td>{{ team.losses }}</td>
-          <td>{{ team.goals_for }}</td>
-          <td>{{ team.goals_against }}</td>
-          <td>{{ team.goal_diff }}</td>
-          <td>{{ team.points }}</td>
+          <td>{{ row.team?.name || 'Sin equipo' }}</td>
+          <td>{{ row.games_played }}</td>
+          <td>{{ row.wins }}</td>
+          <td>{{ row.draws }}</td>
+          <td>{{ row.losses }}</td>
+          <td>{{ row.goals_for }}</td>
+          <td>{{ row.goals_against }}</td>
+          <td>{{ row.goals_for - row.goals_against }}</td>
+          <td>{{ row.points }}</td>
         </tr>
       </tbody>
     </table>

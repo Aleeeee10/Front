@@ -17,18 +17,16 @@
         </option>
       </select>
 
-      <input v-model="form.league" placeholder="Liga / División" required />
       <input v-model="form.date" type="date" required />
-      <input v-model="form.time" type="time" required />
+      <input v-model="form.hour" type="time" required />
+      <input v-model="form.location" placeholder="Ubicación" required />
 
-      <select v-model="form.status">
-        <option>Programado</option>
-        <option>En Vivo</option>
-        <option>Finalizado</option>
+      <select v-model="form.refereeId">
+        <option disabled value="">Árbitro</option>
+        <option v-for="referee in referees" :key="referee.id" :value="referee.id">
+          {{ referee.name }}
+        </option>
       </select>
-
-      <input v-model.number="form.score_team1" type="number" placeholder="Goles equipo 1" min="0" />
-      <input v-model.number="form.score_team2" type="number" placeholder="Goles equipo 2" min="0" />
 
       <div class="form-buttons">
         <button type="submit" class="btn btn-submit">
@@ -47,9 +45,8 @@
           <th>Equipos</th>
           <th>Fecha</th>
           <th>Hora</th>
-          <th>Liga</th>
-          <th>Estado</th>
-          <th>Resultado</th>
+          <th>Ubicación</th>
+          <th>Árbitro</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -58,10 +55,9 @@
           <td>{{ match.id }}</td>
           <td>{{ match.team1?.name }} vs {{ match.team2?.name }}</td>
           <td>{{ match.date }}</td>
-          <td>{{ match.time }}</td>
-          <td>{{ match.league }}</td>
-          <td>{{ match.status }}</td>
-          <td>{{ match.score_team1 }} - {{ match.score_team2 }}</td>
+          <td>{{ match.hour }}</td>
+          <td>{{ match.location }}</td>
+          <td>{{ match.referee?.name }}</td>
           <td>
             <button @click="editMatch(match)" class="btn-icon">✏️</button>
             <button @click="deleteMatch(match.id)" class="btn-icon">🗑️</button>
@@ -74,79 +70,112 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const matches = ref([])
 const teams = ref([])
 const editing = ref(false)
+const csrfToken = ref('')
 
 const form = ref({
   id: null,
   team1Id: '',
   team2Id: '',
-  league: '',
   date: '',
-  time: '',
-  status: 'Programado',
-  score_team1: 0,
-  score_team2: 0
+  hour: '',
+  location: '',
+  refereeId: ''
 })
 
+const fetchCsrfToken = async () => {
+  const res = await instance.get('/api/csrf-token', { withCredentials: true })
+  csrfToken.value = res.data.csrfToken
+  instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+}
+
 const fetchTeams = async () => {
-  const res = await axios.get('http://localhost:3000/teams')
-  teams.value = res.data
+  try {
+    const res = await instance.get('/teams', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    teams.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los equipos', 'error')
+  }
 }
 
 const fetchMatches = async () => {
-  const res = await axios.get('http://localhost:3000/matches')
-  matches.value = res.data
+  try {
+    const res = await instance.get('/matches', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    matches.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los partidos', 'error')
+  }
 }
 
 const handleSubmit = async () => {
   const payload = {
+    date: form.value.date,
+    hour: form.value.hour,
+    location: form.value.location,
     team1: { id: form.value.team1Id },
     team2: { id: form.value.team2Id },
-    league: form.value.league,
-    date: form.value.date,
-    time: form.value.time,
-    status: form.value.status,
-    score_team1: form.value.score_team1,
-    score_team2: form.value.score_team2
+    referee: form.value.refereeId ? { id: form.value.refereeId } : null
   }
 
-  if (editing.value) {
-    await axios.put(`http://localhost:3000/matches/${form.value.id}`, payload)
-  } else {
-    await axios.post('http://localhost:3000/matches', payload)
+  try {
+    if (editing.value) {
+      await instance.put(`/matches/${form.value.id}`, payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Actualizado', 'Partido actualizado correctamente', 'success')
+    } else {
+      await instance.post('/matches', payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Creado', 'Partido creado correctamente', 'success')
+    }
+    resetForm()
+    fetchMatches()
+  } catch (err) {
+    Swal.fire('Error', 'No se pudo guardar el partido', 'error')
   }
-
-  resetForm()
-  fetchMatches()
 }
 
 const editMatch = (match) => {
   form.value = {
     id: match.id,
-    team1Id: match.team1?.id,
-    team2Id: match.team2?.id,
-    league: match.league,
+    team1Id: match.team1?.id || '',
+    team2Id: match.team2?.id || '',
     date: match.date,
-    time: match.time,
-    status: match.status,
-    score_team1: match.score_team1,
-    score_team2: match.score_team2
+    hour: match.hour,
+    location: match.location,
+    refereeId: match.referee?.id || ''
   }
   editing.value = true
 }
 
-const cancelEdit = () => {
-  resetForm()
-}
+const cancelEdit = () => resetForm()
 
 const deleteMatch = async (id) => {
   if (confirm('¿Eliminar este partido?')) {
-    await axios.delete(`http://localhost:3000/matches/${id}`)
-    fetchMatches()
+    try {
+      await instance.delete(`/matches/${id}`, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      fetchMatches()
+      Swal.fire('Eliminado', 'Partido eliminado correctamente', 'success')
+    } catch (err) {
+      Swal.fire('Error', 'No se pudo eliminar el partido', 'error')
+    }
   }
 }
 
@@ -155,19 +184,18 @@ const resetForm = () => {
     id: null,
     team1Id: '',
     team2Id: '',
-    league: '',
     date: '',
-    time: '',
-    status: 'Programado',
-    score_team1: 0,
-    score_team2: 0
+    hour: '',
+    location: '',
+    refereeId: ''
   }
   editing.value = false
 }
 
-onMounted(() => {
-  fetchTeams()
-  fetchMatches()
+onMounted(async () => {
+  await fetchCsrfToken()
+  await fetchTeams()
+  await fetchMatches()
 })
 </script>
 

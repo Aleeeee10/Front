@@ -1,53 +1,51 @@
 <template>
   <div class="profile-container">
-    <h2 class="section-title">👤 Configuración de perfil</h2>
-
+    <h2 class="section-title">Configuración de Perfil</h2>
     <div class="card">
-      <form @submit.prevent="updateProfile">
+      <form @submit.prevent="saveProfile">
         <h3>Datos personales</h3>
-
-        <label>Email</label>
-        <input v-model="email" type="email" placeholder="Correo electrónico" />
-
-        <label>Contraseña (dejar vacío si no cambia)</label>
-        <input v-model="password" type="password" placeholder="Nueva contraseña" />
-
-        <label>Rol</label>
-        <input type="text" :value="user.role" disabled />
-
-        <label>Nombre</label>
-        <input v-model="name" type="text" placeholder="Tu nombre" />
-      </form>
-
-      <form @submit.prevent="savePreferences" class="preferences-form">
-        <h3>Preferencias de apariencia</h3>
-
-        <label>Tema</label>
-        <select v-model="theme">
-          <option value="light">Claro</option>
-          <option value="dark">Oscuro</option>
-          <option value="blue">Azul profundo</option>
-          <option value="green">Verde selva</option>
-          <option value="pink">Rosa suave</option>
-        </select>
-
-        <label>Fuente</label>
-        <select v-model="font">
-          <option>Arial</option>
-          <option>Roboto</option>
-          <option>Poppins</option>
-          <option>Open Sans</option>
-          <option>Lato</option>
-          <option>Montserrat</option>
-        </select>
-
-        <label>Color principal</label>
-        <input type="color" v-model="color" class="color-input" />
-
-        <!-- Botones al final -->
+        <label>
+          Email
+          <input v-model="userForm.email" type="email" placeholder="Correo electrónico" required />
+        </label>
+        <label>
+          Contraseña (dejar vacío si no cambia)
+          <input v-model="userForm.password" type="password" placeholder="Nueva contraseña" />
+        </label>
+        <label>
+          Rol
+          <input v-model="userForm.role" type="text" placeholder="Rol" required />
+        </label>
+        <label>
+          Nombre
+          <input v-model="userForm.name" type="text" placeholder="Tu nombre" required />
+        </label>
         <div class="buttons">
-          <button @click.prevent="updateProfile" class="btn-primary">Guardar perfil</button>
-          <button type="submit" class="btn-secondary">Guardar apariencia</button>
+          <button type="submit" class="btn-primary">Guardar perfil</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="margin-top:2rem;">
+      <form @submit.prevent="savePrefs">
+        <h3>Preferencias de apariencia</h3>
+        <label>
+          Tema:
+          <select v-model="prefs.theme">
+            <option value="Claro">Claro</option>
+            <option value="Oscuro">Oscuro</option>
+          </select>
+        </label>
+        <label>
+          Fuente:
+          <input v-model="prefs.font" placeholder="Fuente" />
+        </label>
+        <label>
+          Color principal:
+          <input v-model="prefs.mainColor" type="color" class="color-input" />
+        </label>
+        <div class="buttons">
+          <button type="submit" class="btn-primary">Guardar apariencia</button>
         </div>
       </form>
     </div>
@@ -55,108 +53,70 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
-const token = localStorage.getItem('token') || ''
-const authHeader = { Authorization: `Bearer ${token}` }
-
-const user = ref({})
-const name = ref('')
-const email = ref('')
-const password = ref('')
-
-const theme = ref('light')
-const font = ref('Arial')
-const color = ref('#00ffc1')
-
-const logout = () => {
-  localStorage.removeItem('token')
-  window.location.href = '/login'
-}
+const user = ref(null)
+const userForm = ref({
+  email: '',
+  password: '',
+  role: '',
+  name: ''
+})
+const prefs = ref({ theme: 'Claro', font: 'Arial', mainColor: '#00ffc1' })
+const csrfToken = ref('')
 
 const fetchProfile = async () => {
+  const res = await instance.get('/auth/profile', { withCredentials: true })
+  user.value = res.data.user
+  userForm.value.email = user.value.email
+  userForm.value.role = user.value.role
+  userForm.value.name = user.value.name
+  userForm.value.password = ''
+}
+const fetchPrefs = async () => {
+  const res = await instance.get('/auth/preferences', {
+    headers: { 'X-CSRF-Token': csrfToken.value },
+    withCredentials: true
+  })
+  if (res.data.preferences) prefs.value = res.data.preferences
+}
+const fetchCsrfToken = async () => {
+  const res = await instance.get('/api/csrf-token', { withCredentials: true })
+  csrfToken.value = res.data.csrfToken
+  instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+}
+const savePrefs = async () => {
   try {
-    const { data } = await axios.get('http://localhost:3000/users/me', {
-      headers: authHeader,
+    await instance.post('/auth/preferences', prefs.value, {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
     })
-    user.value = data
-    name.value = data.name || ''
-    email.value = data.email || ''
-  } catch (err) {
-    alert('Error al obtener perfil')
+    Swal.fire('Guardado', 'Preferencias actualizadas', 'success')
+  } catch {
+    Swal.fire('Error', 'No se pudieron guardar las preferencias', 'error')
   }
 }
 
-const updateProfile = async () => {
+// Este método requiere que tengas un endpoint para actualizar usuario (ej: /auth/profile o /auth/update)
+const saveProfile = async () => {
   try {
-    const updateData = {
-      name: name.value,
-      email: email.value,
-    }
-    if (password.value) updateData.password = password.value
-
-    const oldEmail = user.value.email
-
-    await axios.put('http://localhost:3000/users/me', updateData, {
-      headers: authHeader,
+    await instance.post('/auth/profile', userForm.value, {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
     })
-
-    alert('Perfil actualizado')
-
-    if (email.value !== oldEmail || password.value) {
-      alert('Por seguridad, debes volver a iniciar sesión')
-      logout()
-    } else {
-      password.value = ''
-      await fetchProfile()
-    }
-  } catch (err) {
-    alert(err.response?.data?.message || 'Error al actualizar perfil')
+    Swal.fire('Guardado', 'Perfil actualizado', 'success')
+    await fetchProfile()
+  } catch {
+    Swal.fire('Error', 'No se pudo guardar el perfil', 'error')
   }
 }
-
-const fetchPreferences = async () => {
-  try {
-    const { data } = await axios.get('http://localhost:3000/preferences', {
-      headers: authHeader,
-    })
-    if (data) {
-      theme.value = data.theme
-      font.value = data.font
-      color.value = data.color
-      applyTheme()
-    }
-  } catch (err) {
-    console.warn('Sin preferencias grabadas todavía')
-  }
-}
-
-const savePreferences = async () => {
-  try {
-    await axios.put(
-      'http://localhost:3000/preferences',
-      { theme: theme.value, font: font.value, color: color.value },
-      { headers: authHeader }
-    )
-    applyTheme()
-    alert('Preferencias guardadas')
-  } catch (err) {
-    alert('Error al guardar preferencias')
-  }
-}
-
-const applyTheme = () => {
-  const root = document.documentElement
-  root.dataset.theme = theme.value
-  root.style.setProperty('--main-color', color.value)
-  root.style.setProperty('--main-font', font.value)
-}
-
-watch([theme, font, color], applyTheme)
 
 onMounted(async () => {
-  await Promise.all([fetchProfile(), fetchPreferences()])
+  await fetchCsrfToken()
+  await fetchProfile()
+  await fetchPrefs()
 })
 </script>
 
@@ -281,7 +241,6 @@ select:focus {
     gap: 0.75rem;
   }
 }
-
 </style>
 
 <style>

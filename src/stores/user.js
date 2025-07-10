@@ -20,9 +20,8 @@ export const useUserStore = defineStore('user', {
     },
 
     async fetchMe() {
-      // Si tienes endpoint para obtener el usuario actual
-      const res = await api.get('/users/me')
-      this.user = res.data
+      const res = await api.get('/auth/profile')
+      this.user = res.data.user
     },
 
     logout() {

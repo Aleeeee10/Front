@@ -108,18 +108,29 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const matches = ref([])
 const loading = ref(true)
 const search = ref('')
+const csrfToken = ref('')
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3000/matches')
-    matches.value = res.data
+    // 1. Obtener CSRF token
+    const res = await instance.get('/api/csrf-token', { withCredentials: true })
+    csrfToken.value = res.data.csrfToken
+    instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+
+    // 2. Cargar partidos
+    const matchesRes = await instance.get('/matches', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    matches.value = matchesRes.data
   } catch (err) {
-    alert('Error al cargar partidos')
+    Swal.fire('Error', 'No se pudo cargar la lista de partidos o el token CSRF', 'error')
   } finally {
     loading.value = false
   }
@@ -129,7 +140,7 @@ const filteredMatches = computed(() => {
   const term = search.value.toLowerCase()
   return matches.value.filter(
     m =>
-      m.league.toLowerCase().includes(term) ||
+      m.league?.toLowerCase().includes(term) ||
       (m.team1?.name?.toLowerCase() || '').includes(term) ||
       (m.team2?.name?.toLowerCase() || '').includes(term)
   )
@@ -140,7 +151,6 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString('es-ES', options)
 }
 
-// Solo bordes para el estado, no colores de fondo
 const statusClass = (status) => {
   if (status === 'En Vivo')
     return 'border-red-500 dark:border-red-400'

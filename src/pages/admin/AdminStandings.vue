@@ -10,13 +10,14 @@
         </option>
       </select>
 
-      <input v-model.number="form.played" type="number" placeholder="PJ" />
+      <input v-model="form.nombre" type="text" placeholder="Nombre del equipo" />
+      <input v-model.number="form.puntos" type="number" placeholder="Puntos" />
+      <input v-model.number="form.games_played" type="number" placeholder="PJ" />
       <input v-model.number="form.wins" type="number" placeholder="PG" />
       <input v-model.number="form.draws" type="number" placeholder="PE" />
       <input v-model.number="form.losses" type="number" placeholder="PP" />
       <input v-model.number="form.goals_for" type="number" placeholder="GF" />
       <input v-model.number="form.goals_against" type="number" placeholder="GC" />
-      <input v-model.number="form.points" type="number" placeholder="Puntos" />
 
       <div class="form-buttons">
         <button type="submit" class="btn btn-submit">
@@ -78,7 +79,7 @@ const csrfToken = ref('')
 
 const form = ref({
   id: null,
-  teamId: '',
+  teamId: '', // <-- este es el campo correcto
   games_played: 0,
   wins: 0,
   draws: 0,
@@ -154,14 +155,15 @@ const handleSubmit = async () => {
 const editStanding = (row) => {
   form.value = {
     id: row.id,
-    teamId: row.teamId || row.team?.id || '',
+    equipoId: row.teamId || row.team?.id || '',
+    nombre: row.team?.name || '',
+    puntos: row.points,
     games_played: row.games_played,
     wins: row.wins,
     draws: row.draws,
     losses: row.losses,
     goals_for: row.goals_for,
-    goals_against: row.goals_against,
-    points: row.points
+    goals_against: row.goals_against
   }
   editing.value = true
 }
@@ -186,14 +188,15 @@ const cancelEdit = () => resetForm()
 const resetForm = () => {
   form.value = {
     id: null,
-    teamId: '',
+    equipoId: '',
+    nombre: '',
+    puntos: 0,
     games_played: 0,
     wins: 0,
     draws: 0,
     losses: 0,
     goals_for: 0,
-    goals_against: 0,
-    points: 0
+    goals_against: 0
   }
   editing.value = false
 }

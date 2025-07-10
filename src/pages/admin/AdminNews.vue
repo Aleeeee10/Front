@@ -46,11 +46,13 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import axios from 'axios'
+import Swal from 'sweetalert2'
+import instance from '@/plugins/axios'
 
 const news = ref([])
 const matches = ref([])
 const editing = ref(false)
+const csrfToken = ref('')
 
 const form = ref({
   id: null,
@@ -60,14 +62,34 @@ const form = ref({
   matchId: ''
 })
 
+const fetchCsrfToken = async () => {
+  const res = await instance.get('/api/csrf-token', { withCredentials: true })
+  csrfToken.value = res.data.csrfToken
+  instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+}
+
 const fetchNews = async () => {
-  const res = await axios.get('http://localhost:3000/news')
-  news.value = res.data
+  try {
+    const res = await instance.get('/news', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    news.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar las noticias', 'error')
+  }
 }
 
 const fetchMatches = async () => {
-  const res = await axios.get('http://localhost:3000/matches')
-  matches.value = res.data
+  try {
+    const res = await instance.get('/matches', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    matches.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los partidos', 'error')
+  }
 }
 
 const handleSubmit = async () => {
@@ -78,14 +100,25 @@ const handleSubmit = async () => {
     match: form.value.matchId ? { id: form.value.matchId } : null
   }
 
-  if (editing.value) {
-    await axios.put(`http://localhost:3000/news/${form.value.id}`, payload)
-  } else {
-    await axios.post('http://localhost:3000/news', payload)
+  try {
+    if (editing.value) {
+      await instance.put(`/news/${form.value.id}`, payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Actualizado', 'Noticia actualizada correctamente', 'success')
+    } else {
+      await instance.post('/news', payload, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      Swal.fire('Creada', 'Noticia creada correctamente', 'success')
+    }
+    resetForm()
+    fetchNews()
+  } catch (err) {
+    Swal.fire('Error', 'No se pudo guardar la noticia', 'error')
   }
-
-  resetForm()
-  fetchNews()
 }
 
 const editNews = (item) => {
@@ -103,8 +136,16 @@ const cancelEdit = () => resetForm()
 
 const deleteNews = async (id) => {
   if (confirm('¿Eliminar esta noticia?')) {
-    await axios.delete(`http://localhost:3000/news/${id}`)
-    fetchNews()
+    try {
+      await instance.delete(`/news/${id}`, {
+        headers: { 'X-CSRF-Token': csrfToken.value },
+        withCredentials: true
+      })
+      fetchNews()
+      Swal.fire('Eliminada', 'Noticia eliminada correctamente', 'success')
+    } catch (err) {
+      Swal.fire('Error', 'No se pudo eliminar la noticia', 'error')
+    }
   }
 }
 
@@ -126,9 +167,10 @@ const formatDate = (str) =>
     day: 'numeric'
   })
 
-onMounted(() => {
-  fetchNews()
-  fetchMatches()
+onMounted(async () => {
+  await fetchCsrfToken()
+  await fetchNews()
+  await fetchMatches()
 })
 </script>
 
