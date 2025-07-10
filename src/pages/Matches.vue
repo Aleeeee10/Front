@@ -44,23 +44,39 @@
             class="info-layer absolute inset-0 z-10 bg-black bg-opacity-80 flex flex-col justify-center items-center opacity-0 transition-opacity duration-400 px-10 text-center rounded-3xl match-card:hover:opacity-100">
             <span class="text-xs uppercase tracking-wider text-gray-300 mb-5 font-semibold">{{ match.league }}</span>
 
-            <div class="flex flex-col text-white gap-6 w-full max-w-xs mx-auto">
-              <div class="team-section flex items-center justify-between">
-                <div class="team flex items-center gap-4">
-                  <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 to-blue-700 border-4 border-white">
-                  </div>
-                  <span class="text-base font-semibold truncate">{{ match.team1.name }}</span>
-                </div>
-                <span class="text-3xl font-extrabold">{{ match.score_team1 }}</span>
-              </div>
 
-              <div class="team-section flex items-center justify-between">
-                <div class="team flex items-center gap-4">
-                  <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-red-500 to-red-700 border-4 border-white">
-                  </div>
-                  <span class="text-base font-semibold truncate">{{ match.team2.name }}</span>
+            <div class="flex flex-col text-white gap-6 w-full max-w-xs mx-auto">
+              <div class="flex justify-between w-full mx-auto gap-8">
+                <!-- Equipo 1 -->
+                <div class="team flex flex-col items-center gap-2">
+                  <img
+                    :src="match.team1?.logo_url"
+                    alt="logo equipo 1"
+                    class="w-14 h-14 rounded-full object-cover border-4 border-white bg-gray-200"
+                  />
+                  <span class="text-base font-semibold truncate">{{ match.team1?.name }}</span>
                 </div>
-                <span class="text-3xl font-extrabold">{{ match.score_team2 }}</span>
+                <div class="flex flex-col items-center justify-center">
+                  <span class="text-3xl font-extrabold">{{ match.score_team1 }} - {{ match.score_team2 }}</span>
+                </div>
+                <!-- Equipo 2 -->
+                <div class="team flex flex-col items-center gap-2">
+                  <img
+                    :src="match.team2?.logo_url"
+                    alt="logo equipo 2"
+                    class="w-14 h-14 rounded-full object-cover border-4 border-white bg-gray-200"
+                  />
+                  <span class="text-base font-semibold truncate">{{ match.team2?.name }}</span>
+                </div>
+              </div>
+              <!-- Árbitro -->
+              <div v-if="match.referee" class="flex flex-col items-center mt-4">
+                <img
+                  :src="match.referee.photo_url"
+                  alt="foto árbitro"
+                  class="w-10 h-10 rounded-full object-cover border-2 border-blue-400 bg-gray-200 mb-1"
+                />
+                <span class="text-sm font-medium text-gray-200">{{ match.referee.name }}</span>
               </div>
             </div>
 
@@ -96,6 +112,16 @@
               <template v-else>
                 <span class="text-base italic text-gray-500 dark:text-gray-400">Resultado pendiente</span>
               </template>
+            </div>
+
+            <!-- Información del árbitro -->
+            <div v-if="match.referee" class="flex flex-col items-center mt-4">
+              <img
+                :src="match.referee.photo_url"
+                alt="foto árbitro"
+                class="w-10 h-10 rounded-full object-cover border-2 border-blue-400 bg-gray-200 mb-1"
+              />
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ match.referee.name }}</span>
             </div>
           </div>
 

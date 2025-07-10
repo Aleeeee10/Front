@@ -75,6 +75,7 @@ import instance from '@/plugins/axios'
 
 const matches = ref([])
 const teams = ref([])
+const referees = ref([])
 const editing = ref(false)
 const csrfToken = ref('')
 
@@ -103,6 +104,18 @@ const fetchTeams = async () => {
     teams.value = res.data
   } catch (err) {
     Swal.fire('Error', 'No se pudieron cargar los equipos', 'error')
+  }
+}
+
+const fetchReferees = async () => {
+  try {
+    const res = await instance.get('/referees', {
+      headers: { 'X-CSRF-Token': csrfToken.value },
+      withCredentials: true
+    })
+    referees.value = res.data
+  } catch (err) {
+    Swal.fire('Error', 'No se pudieron cargar los árbitros', 'error')
   }
 }
 
@@ -195,6 +208,7 @@ const resetForm = () => {
 onMounted(async () => {
   await fetchCsrfToken()
   await fetchTeams()
+  await fetchReferees()
   await fetchMatches()
 })
 </script>
