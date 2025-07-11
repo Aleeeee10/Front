@@ -69,7 +69,7 @@
         >
           <option value="">Selecciona un rol</option>
           <option value="admin">Administrador</option>
-          <option value="user">Usuario</option>
+          <option value="usuario">Usuario</option>
         </select>
         <p v-if="roleError" class="error-msg">{{ roleError }}</p>
       </div>

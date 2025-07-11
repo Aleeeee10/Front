@@ -102,7 +102,12 @@ const savePrefs = async () => {
 // Este método requiere que tengas un endpoint para actualizar usuario (ej: /auth/profile o /auth/update)
 const saveProfile = async () => {
   try {
-    await instance.post('/auth/profile', userForm.value, {
+    await instance.put('/auth/profile', {
+      email: userForm.value.email,
+      name: userForm.value.name,
+      role: userForm.value.role,
+      password: userForm.value.password // Si está vacío, el backend lo ignora
+    }, {
       headers: { 'X-CSRF-Token': csrfToken.value },
       withCredentials: true
     })

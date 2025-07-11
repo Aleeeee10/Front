@@ -22,34 +22,6 @@
       <AdminNews v-if="view === 'news'" />
       <AdminStandings v-if="view === 'standings'" />
 
-      <!-- Perfil y preferencias aquí -->
-      <div v-if="view === 'profile'">
-        <h2>Mi Perfil</h2>
-        <div v-if="user">
-          <p><b>Nombre:</b> {{ user.name }}</p>
-          <p><b>Email:</b> {{ user.email }}</p>
-          <p><b>Rol:</b> {{ user.role }}</p>
-        </div>
-        <form @submit.prevent="savePrefs" class="prefs-form">
-          <h3>Preferencias</h3>
-          <label>
-            Tema:
-            <select v-model="prefs.theme">
-              <option value="Claro">Claro</option>
-              <option value="Oscuro">Oscuro</option>
-            </select>
-          </label>
-          <label>
-            Fuente:
-            <input v-model="prefs.font" placeholder="Fuente" />
-          </label>
-          <label>
-            Color principal:
-            <input v-model="prefs.mainColor" type="color" />
-          </label>
-          <button type="submit">Guardar preferencias</button>
-        </form>
-      </div>
     </div>
   </div>
 </template>
@@ -75,8 +47,7 @@ const sections = [
   { label: 'Árbitros', view: 'referees' },
   { label: 'Partidos', view: 'matches' },
   { label: 'Noticias', view: 'news' },
-  { label: 'Posiciones', view: 'standings' },
-  { label: 'Perfil', view: 'profile' }
+  { label: 'Posiciones', view: 'standings' }
 ]
 
 // Perfil y preferencias
