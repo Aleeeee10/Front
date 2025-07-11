@@ -80,7 +80,7 @@
       <!-- Link a login -->
       <p class="login-text">
         ¿Ya tienes cuenta?
-        <router-link to="/login" class="login-link">Inicia sesión</router-link>
+        <router-link to="/" class="login-link">Inicia sesión</router-link>
       </p>
     </form>
   </div>
