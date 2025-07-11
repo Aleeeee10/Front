@@ -19,8 +19,14 @@
       <AdminPlayers v-if="view === 'players'" />
       <AdminReferees v-if="view === 'referees'" />
       <AdminMatches v-if="view === 'matches'" />
+      <AdminResults v-if="view === 'results'" />
+      <AdminMatchResults v-if="view === 'matchResults'" />
       <AdminNews v-if="view === 'news'" />
       <AdminStandings v-if="view === 'standings'" />
+      <AdminStats v-if="view === 'stats'" />
+      <AdminFields v-if="view === 'fields'" />
+      <AdminDivisions v-if="view === 'divisions'" />
+      <AdminUsers v-if="view === 'users'" />
 
       <!-- Perfil y preferencias aquí -->
       <div v-if="view === 'profile'">
@@ -57,13 +63,21 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Swal from 'sweetalert2'
+
 import Dashboard from '../pages/admin/Dashboard.vue'
 import AdminTeams from '../pages/admin/AdminTeams.vue'
 import AdminPlayers from '../pages/admin/AdminPlayers.vue'
 import AdminReferees from '../pages/admin/AdminReferees.vue'
 import AdminMatches from '../pages/admin/AdminMatches.vue'
+import AdminResults from '../pages/admin/AdminResults.vue'
+import AdminMatchResults from '../pages/admin/AdminMatchResults.vue'
 import AdminNews from '../pages/admin/AdminNews.vue'
 import AdminStandings from '../pages/admin/AdminStandings.vue'
+import AdminStats from '../pages/admin/AdminStats.vue'
+import AdminFields from '../pages/admin/AdminFields.vue'
+import AdminDivisions from '../pages/admin/AdminDivisions.vue'
+import AdminUsers from '../pages/admin/AdminUsers.vue'
+
 import instance from '@/plugins/axios'
 
 const view = ref('dashboard')
@@ -74,8 +88,14 @@ const sections = [
   { label: 'Jugadores', view: 'players' },
   { label: 'Árbitros', view: 'referees' },
   { label: 'Partidos', view: 'matches' },
+  { label: 'Resultados', view: 'results' },
+  { label: 'Resultados de Partidos', view: 'matchResults' },
   { label: 'Noticias', view: 'news' },
   { label: 'Posiciones', view: 'standings' },
+  { label: 'Estadísticas', view: 'stats' },
+  { label: 'Campos', view: 'fields' },
+  { label: 'Divisiones', view: 'divisions' },
+  { label: 'Usuarios', view: 'users' },
   { label: 'Perfil', view: 'profile' }
 ]
 
