@@ -21,6 +21,13 @@
       <AdminMatches v-if="view === 'matches'" />
       <AdminNews v-if="view === 'news'" />
       <AdminStandings v-if="view === 'standings'" />
+      <AdminUsers v-if="view === 'users'" />
+      <AdminStats v-if="view === 'stats'" />
+      <AdminResults v-if="view === 'results'" />
+      <AdminPlayerDetails v-if="view === 'playerDetails'" />
+      <AdminMatchResults v-if="view === 'matchResults'" />
+      <AdminFields v-if="view === 'fields'" />
+      <AdminDivisions v-if="view === 'divisions'" />
 
       <!-- Perfil y preferencias aquí -->
       <div v-if="view === 'profile'">
@@ -64,6 +71,13 @@ import AdminReferees from '../pages/admin/AdminReferees.vue'
 import AdminMatches from '../pages/admin/AdminMatches.vue'
 import AdminNews from '../pages/admin/AdminNews.vue'
 import AdminStandings from '../pages/admin/AdminStandings.vue'
+import AdminUsers from '../pages/admin/AdminUsers.vue'
+import AdminStats from '../pages/admin/AdminStats.vue'
+import AdminResults from '../pages/admin/AdminResults.vue'
+import AdminPlayerDetails from '../pages/admin/AdminPlayerDetails.vue'
+import AdminMatchResults from '../pages/admin/AdminMatchResults.vue'
+import AdminFields from '../pages/admin/AdminFields.vue'
+import AdminDivisions from '../pages/admin/AdminDivisions.vue'
 import instance from '@/plugins/axios'
 
 const view = ref('dashboard')
@@ -76,7 +90,14 @@ const sections = [
   { label: 'Partidos', view: 'matches' },
   { label: 'Noticias', view: 'news' },
   { label: 'Posiciones', view: 'standings' },
-  { label: 'Perfil', view: 'profile' }
+  { label: 'Perfil', view: 'profile' },
+  { label: 'Usuarios', view: 'users' },
+  { label: 'Estadísticas', view: 'stats' },
+  { label: 'Resultados', view: 'results' },
+  { label: 'Detalles Jugador', view: 'playerDetails' },
+  { label: 'Resultados Partidos', view: 'matchResults' },
+  { label: 'Campos', view: 'fields' },
+  { label: 'Divisiones', view: 'divisions' }
 ]
 
 // Perfil y preferencias

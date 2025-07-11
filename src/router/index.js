@@ -12,19 +12,23 @@ import News from '../pages/News.vue'
 import Standings from '../pages/Standings.vue'
 import Profile from '../pages/Profile.vue'
 import Admin from '../pages/Admin.vue'
+import Home from '../pages/Home.vue'
+import UserProfile from '../pages/UserProfile.vue'
 
 const routes = [
   {
-    path: '/',
-    component: () => import('@/components/Home.vue') // asegúrate que existe
+    path: '/inicio',
+    component: Home // asegúrate que existe
   },
   {
-    path: '/login',
-    component: Login
+    path: '/',
+    component: Login,
+    meta:{hideNavbar: true}
   },
   {
     path: '/register',
-    component: Register
+    component: Register,
+    meta:{hideNavbar: true}
   },
   {
     path: '/teams',
@@ -59,6 +63,11 @@ const routes = [
     path: '/admin',
     component: Admin,
     meta: { requiresAuth: true, role: 'admin' }
+  },
+
+  {
+    path:'/userProfile',
+    component: UserProfile,
   }
 ]
 
@@ -73,7 +82,7 @@ router.beforeEach((to, from, next) => {
   const allowedRole = to.meta.role
 
   if (requiresAuth && !store.user) {
-    next('/login')
+    next('/')
   } else if (allowedRole && store.user?.role !== allowedRole) {
     next('/teams')
   } else {
