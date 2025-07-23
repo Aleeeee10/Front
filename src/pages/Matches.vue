@@ -46,27 +46,28 @@
 
 
             <div class="flex flex-col text-white gap-6 w-full max-w-xs mx-auto">
-              <div class="flex justify-between w-full mx-auto gap-8">
+              <div class="flex justify-between w-full mx-auto gap-12 items-center">
                 <!-- Equipo 1 -->
-                <div class="team flex flex-col items-center gap-2">
+                <div class="team flex flex-col items-center gap-3 flex-1">
                   <img
                     :src="match.team1?.logo_url"
                     alt="logo equipo 1"
-                    class="w-14 h-14 rounded-full object-cover border-4 border-white bg-gray-200"
+                    class="w-24 h-24 rounded-full object-cover border-4 border-white bg-gray-200 shadow-lg"
                   />
-                  <span class="text-base font-semibold truncate">{{ match.team1?.name }}</span>
+                  <span class="text-lg font-bold text-white text-center mt-2 break-words max-w-[110px]">{{ match.team1?.name }}</span>
                 </div>
-                <div class="flex flex-col items-center justify-center">
-                  <span class="text-3xl font-extrabold">{{ match.score_team1 }} - {{ match.score_team2 }}</span>
+                <!-- Marcador grande y centrado -->
+                <div class="flex flex-col items-center justify-center flex-shrink-0">
+                  <span class="text-5xl font-extrabold text-white drop-shadow-lg">{{ match.score_team1 }} - {{ match.score_team2 }}</span>
                 </div>
                 <!-- Equipo 2 -->
-                <div class="team flex flex-col items-center gap-2">
+                <div class="team flex flex-col items-center gap-3 flex-1">
                   <img
                     :src="match.team2?.logo_url"
                     alt="logo equipo 2"
-                    class="w-14 h-14 rounded-full object-cover border-4 border-white bg-gray-200"
+                    class="w-24 h-24 rounded-full object-cover border-4 border-white bg-gray-200 shadow-lg"
                   />
-                  <span class="text-base font-semibold truncate">{{ match.team2?.name }}</span>
+                  <span class="text-lg font-bold text-white text-center mt-2 break-words max-w-[110px]">{{ match.team2?.name }}</span>
                 </div>
               </div>
               <!-- Árbitro -->
@@ -94,13 +95,24 @@
             <h3 class="text-2xl font-extrabold mb-3 truncate select-none">
               {{ match.league }}
             </h3>
-            <p class="text-xl font-semibold truncate select-none flex items-center justify-center gap-3">
-              {{ match.team1.name }}
-              <span class="mx-3 text-gray-500 dark:text-gray-400 text-2xl select-none">vs</span>
-              {{ match.team2.name }}
-            </p>
-            <p
-              class="text-base mt-4 flex items-center justify-center gap-3 select-none font-medium text-gray-600 dark:text-gray-300">
+            <div class="flex items-center justify-center gap-4 w-full mb-2">
+              <span
+                class="team-name px-3 py-1 rounded-lg bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 font-bold text-lg shadow max-w-[120px] text-ellipsis overflow-hidden whitespace-normal text-center"
+                :title="match.team1.name"
+                style="min-width:80px;"
+              >
+                {{ match.team1.name }}
+              </span>
+              <span class="mx-2 text-gray-500 dark:text-gray-400 text-2xl select-none font-bold">vs</span>
+              <span
+                class="team-name px-3 py-1 rounded-lg bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 font-bold text-lg shadow max-w-[120px] text-ellipsis overflow-hidden whitespace-normal text-center"
+                :title="match.team2.name"
+                style="min-width:80px;"
+              >
+                {{ match.team2.name }}
+              </span>
+            </div>
+            <p class="text-base mt-4 flex items-center justify-center gap-3 select-none font-medium text-gray-600 dark:text-gray-300">
               <span class="text-xl">📅</span> {{ formatDate(match.date) }}
               <span class="text-lg">·</span>
               <span class="text-xl">⏰</span> {{ match.time }}
@@ -210,5 +222,18 @@ const statusBadgeGradient = (status) => {
 
 .match-card:hover .default-content {
   opacity: 0 !important;
+}
+
+.team-name {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  letter-spacing: 0.5px;
+  word-break: break-word;
+}
+
+.team img {
+  transition: transform 0.3s;
+}
+.team img:hover {
+  transform: scale(1.08) rotate(-2deg);
 }
 </style>

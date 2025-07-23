@@ -4,27 +4,28 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import axios from 'axios'
+import { useUserStore } from './stores/user'
 import { usePreferencesStore } from '@/stores/preferences'
 
-axios.defaults.baseURL = 'http://localhost:3000'
-axios.interceptors.request.use(cfg => {
-  const token = localStorage.getItem('token')
-  if (token) cfg.headers.Authorization = `Bearer ${token}`
-  return cfg
-})
-
-const app   = createApp(App)
+const app = createApp(App)
 const pinia = createPinia()
 
-app.config.globalProperties.$axios = axios
 app.use(pinia)
 app.use(router)
 
+// ✅ Inicializar stores y aplicación
 ;(async () => {
-  const prefStore = usePreferencesStore(pinia)
+  const userStore = useUserStore()
+  const prefStore = usePreferencesStore()
+  
   try {
+    // Inicializar autenticación
+    await userStore.initializeStore()
+    
+    // Inicializar preferencias
     await prefStore.fetch()
+  } catch (error) {
+    console.error('Error inicializando aplicación:', error)
   } finally {
     prefStore.applyTheme()
     app.mount('#app')

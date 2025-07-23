@@ -48,6 +48,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useRouter } from 'vue-router'
 import instance from '@/plugins/axios'
+import Swal from 'sweetalert2'
 
 const email = ref('')
 const password = ref('')
@@ -59,64 +60,100 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const validateEmail = () => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!email.value) {
     emailError.value = 'El correo es obligatorio.'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    emailError.value = 'Introduce un correo válido.'
+  } else if (!regex.test(email.value)) {
+    emailError.value = 'Correo inválido.'
   } else {
     emailError.value = ''
   }
 }
 
 const validatePassword = () => {
-  if (!password.value) {
-    passwordError.value = 'La contraseña es obligatoria.'
-  } else if (password.value.length < 6) {
-    passwordError.value = 'La contraseña debe tener al menos 6 caracteres.'
-  } else {
-    passwordError.value = ''
-  }
+  passwordError.value = password.value.length < 6 ? 'La contraseña debe tener al menos 6 caracteres.' : ''
 }
 
-const formValid = computed(() => {
-  return email.value && password.value && !emailError.value && !passwordError.value
-})
+const formValid = computed(() => 
+  email.value && 
+  password.value && 
+  !emailError.value && 
+  !passwordError.value
+)
 
 const handleLogin = async () => {
   validateEmail()
   validatePassword()
+  
   if (!formValid.value) return
 
   try {
+    // ✅ Usar la ruta correcta del backend: /auth/login
     const response = await instance.post('/auth/login', {
       email: email.value,
-      password: password.value
+      contraseña: password.value  // ✅ Backend espera 'contraseña', no 'password'
     }, {
       headers: {
         'X-CSRF-Token': csrfToken.value
-      }
+      },
+      withCredentials: true
     })
 
-    // Guarda el usuario en el store
-    userStore.setUser(response.data.user)
+    // ✅ Verificar estructura de respuesta del backend
+    if (response.data.success) {
+      // ✅ NUEVO: Guardar usuario con información completa de rol
+      userStore.setUser({
+        id: response.data.user.id,
+        nombre: response.data.user.nombre,
+        email: response.data.user.email,
+        avatar: response.data.user.avatar,
+        role: response.data.user.role,      // ✅ Rol del usuario
+        roleId: response.data.user.roleId,  // ✅ ID del rol
+        preferencias: response.data.user.preferencias
+      })
+      
+      Swal.fire({
+        title: '¡Bienvenido!',
+        text: `Hola ${response.data.user.nombre}`,
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      })
 
-    if (response.data.user.role === 'admin') {
-      router.push('/admin')
-    } else {
-      router.push('/') // Home.vue está en la ruta raíz
+      // ✅ NUEVO: Redirigir según el rol del usuario
+      setTimeout(() => {
+        console.log('🔍 Usuario logueado:', {
+          role: userStore.userRole,
+          roleId: userStore.roleId,
+          isAdmin: userStore.isAdmin()
+        })
+        
+        if (userStore.isAdmin()) {
+          console.log('✅ Redirigiendo a admin dashboard')
+          router.push('/admin/dashboard') // Admin → Dashboard
+        } else {
+          console.log('✅ Redirigiendo a inicio')
+          router.push('/') // Otros roles → Inicio
+        }
+      }, 1500)
     }
   } catch (err) {
-    alert(err.response?.data?.message || 'Login inválido')
+    const errorMessage = err.response?.data?.message || 'Error en el inicio de sesión'
+    Swal.fire({
+      title: 'Error',
+      text: errorMessage,
+      icon: 'error'
+    })
   }
 }
 
 onMounted(async () => {
   try {
-    const res = await instance.get('/api/csrf-token')
+    const res = await instance.get('/api/csrf-token', { withCredentials: true })
     csrfToken.value = res.data.csrfToken
     instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
   } catch (error) {
-    // Maneja el error si no se puede obtener el token
+    console.error('Error obteniendo token CSRF:', error)
   }
 })
 </script>
@@ -128,133 +165,82 @@ onMounted(async () => {
   padding: 2rem 3rem;
   background: #1e1e2f;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  text-align: center;
 }
 
 .title {
+  text-align: center;
   margin-bottom: 2rem;
-  font-weight: 700;
-  font-size: 2.2rem;
-  letter-spacing: 1.5px;
+  font-size: 1.8rem;
+  font-weight: bold;
   color: #00ffc1;
-  text-shadow: 0 0 8px #00ffc1;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.4rem;
+  gap: 1rem;
 }
 
-.login-form input {
-  padding: 0.75rem 1rem;
+input {
+  padding: 0.75rem;
+  border: 1px solid #444;
   border-radius: 8px;
-  border: none;
-  font-size: 1rem;
-  outline: none;
-  transition: box-shadow 0.3s ease, background 0.3s ease;
   background: #2a2a3e;
-  color: #eee;
-  box-shadow: inset 0 0 5px #111;
+  color: #fff;
+  font-size: 1rem;
 }
 
-.login-form input::placeholder {
-  color: #999;
+input:focus {
+  outline: none;
+  border-color: #00ffc1;
+  box-shadow: 0 0 0 2px rgba(0, 255, 193, 0.2);
 }
 
-.login-form input:focus {
-  box-shadow: 0 0 8px #00ffc1;
-  background: #1f1f2e;
-}
-
-.login-form input.invalid {
-  box-shadow: 0 0 8px #ff4d6d;
-  background: #3b2f3a;
-  color: #ff7f8f;
+input.invalid {
+  border-color: #ff4757;
 }
 
 .error-msg {
-  margin: -1rem 0 1rem;
-  font-size: 0.9rem;
-  color: #ff4d6d;
-  font-weight: 600;
-  text-align: left;
-  animation: fadeIn 0.4s ease forwards;
+  color: #ff4757;
+  font-size: 0.875rem;
+  margin-top: -0.5rem;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.login-form button {
-  padding: 0.85rem 0;
+button {
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #00ffc1, #00b894);
+  color: #1e1e2f;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(90deg, #00ffc1, #00e0b8);
-  color: #0a0a0a;
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 4px 14px #00ffc1aa;
+  transition: all 0.3s ease;
 }
 
-.login-form button:hover:enabled {
-  background: linear-gradient(90deg, #00e0b8, #00ffc1);
-  transform: scale(1.05);
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 193, 0.4);
 }
 
-.login-form button:active:enabled {
-  transform: scale(0.98);
-}
-
-.login-form button:disabled {
-  background: #555759;
+button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  box-shadow: none;
-  color: #b2b2b2;
-  transform: none;
 }
 
 .register-text {
-  margin-top: 1.6rem;
-  font-size: 1rem;
-  color: #bbb;
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #888;
 }
 
 .register-link {
   color: #00ffc1;
-  font-weight: 700;
   text-decoration: none;
-  transition: color 0.3s ease;
 }
 
-.register-link:hover,
-.register-link:focus {
-  color: #00e0b8;
-  outline: none;
+.register-link:hover {
   text-decoration: underline;
-}
-
-/* Ocultar labels pero accesibles */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  border: 0;
 }
 </style>

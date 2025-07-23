@@ -58,20 +58,53 @@
         <p v-if="confirmError" class="error-msg">{{ confirmError }}</p>
       </div>
 
-      <!-- Rol -->
+      <!-- ✅ NUEVO: Selección de Rol -->
       <div class="form-group">
-        <label for="role" class="sr-only">Rol</label>
-        <select
-          v-model="role"
-          id="role"
-          :class="{ invalid: roleError }"
-          @blur="validateRole"
-        >
-          <option value="">Selecciona un rol</option>
-          <option value="admin">Administrador</option>
-          <option value="usuario">Usuario</option>
+        <label for="rol">¿Cuál es tu rol en el fútbol?</label>
+        <select v-model="selectedRole" id="rol" :class="{ invalid: roleError }">
+          <option value="">Selecciona tu rol</option>
+          <option v-for="role in availableRoles" :key="role.idRoles" :value="role.idRoles">
+            {{ role.nombre }} - {{ role.descripcion }}
+          </option>
         </select>
         <p v-if="roleError" class="error-msg">{{ roleError }}</p>
+      </div>
+
+      <!-- Avatar (opcional) -->
+      <div class="form-group">
+        <label for="avatar" class="sr-only">Avatar URL</label>
+        <input
+          v-model="avatar"
+          type="url"
+          id="avatar"
+          placeholder="URL del avatar (opcional)"
+        />
+      </div>
+
+      <!-- Preferencias -->
+      <div class="form-group">
+        <label for="tema">Tema preferido:</label>
+        <select v-model="tema" id="tema">
+          <option value="claro">Claro</option>
+          <option value="oscuro">Oscuro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="idioma">Idioma:</label>
+        <select v-model="idioma" id="idioma">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <input 
+          v-model="notificacionesEnabled" 
+          type="checkbox" 
+          id="notifications"
+        />
+        <label for="notifications">Recibir notificaciones</label>
       </div>
 
       <!-- Botón -->
@@ -94,24 +127,37 @@ import instance from '@/plugins/axios'
 
 const router = useRouter()
 
+// ✅ Variables existentes
 const name = ref('')
 const email = ref('')
 const password = ref('')
 const confirm = ref('')
-const role = ref('')
+const avatar = ref('')
+const tema = ref('claro')
+const idioma = ref('es')
+const notificacionesEnabled = ref(true)
+
+// ✅ NUEVAS Variables para roles
+const selectedRole = ref('')
+const availableRoles = ref([])
+const roleError = ref('')
 
 const nameError = ref('')
 const emailError = ref('')
 const passwordError = ref('')
 const confirmError = ref('')
-const roleError = ref('')
-
 const csrfToken = ref('')
 
-// Validaciones
+// ✅ NUEVA: Validación de rol
+const validateRole = () => {
+  roleError.value = selectedRole.value ? '' : 'Debes seleccionar un rol.'
+}
+
+// Validaciones existentes
 const validateName = () => {
   nameError.value = name.value.trim() ? '' : 'El nombre es obligatorio.'
 }
+
 const validateEmail = () => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!email.value) {
@@ -122,38 +168,66 @@ const validateEmail = () => {
     emailError.value = ''
   }
 }
+
 const validatePassword = () => {
   passwordError.value =
     password.value.length < 6 ? 'La contraseña debe tener al menos 6 caracteres.' : ''
 }
+
 const validateConfirm = () => {
   confirmError.value =
     confirm.value !== password.value ? 'Las contraseñas no coinciden.' : ''
 }
-const validateRole = () => {
-  roleError.value = role.value ? '' : 'Selecciona un rol.'
-}
 
+// ✅ ACTUALIZAR: FormValid incluye validación de rol
 const formValid = computed(() =>
   name.value &&
   email.value &&
   password.value &&
   confirm.value &&
-  role.value &&
+  selectedRole.value &&  // ✅ Agregar validación de rol
   !nameError.value &&
   !emailError.value &&
   !passwordError.value &&
   !confirmError.value &&
-  !roleError.value
+  !roleError.value  // ✅ Agregar validación de rol
 )
 
-// Obtener CSRF token al montar el componente
+// ✅ NUEVA: Función para cargar roles disponibles
+const loadAvailableRoles = async () => {
+  try {
+    // ✅ Usar la ruta correcta
+    const response = await instance.get('/roles/disponibles')
+    
+    availableRoles.value = response.data
+    
+    console.log('Roles disponibles:', availableRoles.value)
+  } catch (error) {
+    console.error('Error al cargar roles:', error)
+    Swal.fire('Error', 'No se pudieron cargar los roles disponibles', 'error')
+    
+    // Roles por defecto si falla la carga
+    availableRoles.value = [
+      { idRoles: 1, nombre: 'Administrador', descripcion: 'Administrador del sistema' },
+      { idRoles: 2, nombre: 'Usuario', descripcion: 'Usuario regular' },
+      { idRoles: 3, nombre: 'Moderador', descripcion: 'Moderador de contenido' },
+      { idRoles: 4, nombre: 'Entrenador', descripcion: 'Entrenador de equipos' },
+      { idRoles: 5, nombre: 'Jugador', descripcion: 'Jugador de fútbol' }
+    ]
+  }
+}
+
+// Obtener CSRF token y cargar roles al montar el componente
 onMounted(async () => {
   try {
-    const res = await instance.get('/api/csrf-token')
+    // Cargar token CSRF
+    const res = await instance.get('/api/csrf-token', { withCredentials: true })
     csrfToken.value = res.data.csrfToken
-    // Configura el token CSRF en Axios por defecto
     instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
+    
+    // Cargar roles disponibles
+    await loadAvailableRoles()
+    
   } catch (error) {
     Swal.fire('Error', 'No se pudo obtener el token CSRF', 'error')
   }
@@ -169,20 +243,47 @@ const handleRegister = async () => {
   if (!formValid.value) return
 
   try {
-    await instance.post('/auth/register', {
-      name: name.value,
+    const response = await instance.post('/auth/register', {
+      nombre: name.value,
       email: email.value,
-      password: password.value,
-      role: role.value,
+      contraseña: password.value,
+      avatar: avatar.value || null,
+      tema: tema.value,
+      idioma: idioma.value,
+      notificacionesEnabled: notificacionesEnabled.value,
+      idRole: parseInt(selectedRole.value)
     }, {
       headers: {
         'X-CSRF-Token': csrfToken.value,
-      }
+      },
+      withCredentials: true
     })
-    Swal.fire('¡Registro exitoso!', 'Ahora puedes iniciar sesión.', 'success')
-    router.push('/login')
+
+    if (response.data.success) {
+      const selectedRoleName = availableRoles.value.find(r => r.idRoles === parseInt(selectedRole.value))?.nombre || 'Usuario'
+      
+      Swal.fire({
+        title: '¡Registro exitoso!',
+        text: `Te has registrado como ${selectedRoleName}. ${response.data.message}`,
+        icon: 'success',
+        timer: 3000,
+        showConfirmButton: false
+      })
+      
+      // ✅ NUEVO: Redirigir según el rol registrado
+      setTimeout(() => {
+        if (selectedRoleName === 'Administrador') {
+          // Si se registró como admin, ir al login para que inicie sesión
+          router.push('/login?message=Ahora inicia sesión como administrador')
+        } else {
+          // Otros roles van al login normal
+          router.push('/login')
+        }
+      }, 2500)
+    }
   } catch (error) {
-    Swal.fire('Error', error.response?.data?.message || 'Error al registrar usuario', 'error')
+    const errorMessage = error.response?.data?.message || 'Error al registrar usuario'
+    Swal.fire('Error', errorMessage, 'error')
   }
 }
 </script>
@@ -206,111 +307,135 @@ const handleRegister = async () => {
   letter-spacing: 1px;
   text-align: center;
   color: #00ffc1;
-  text-shadow: 0 0 12px #00ffc1aa;
 }
 
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 1.8rem;
+  gap: 1.5rem;
 }
 
-.register-form input,
-.register-form select {
-  width: 100%;
-  padding: 0.9rem 1rem;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+input, select {
+  padding: 0.875rem 1rem;
+  border: 2px solid #2a2d47;
   border-radius: 10px;
-  border: none;
+  background: #1a1d35;
+  color: #ffffff;
   font-size: 1rem;
-  background: #252d40;
-  color: #e0e0e0;
-  box-shadow: inset 0 0 6px #111;
   transition: all 0.3s ease;
 }
 
-.register-form input::placeholder {
-  color: #aaa;
+input:focus, select:focus {
+  outline: none;
+  border-color: #00ffc1;
+  box-shadow: 0 0 0 3px rgba(0, 255, 193, 0.1);
 }
 
-.register-form input:focus,
-.register-form select:focus {
-  box-shadow: 0 0 8px #00ffc1;
-  background: #1b2231;
-}
-
-.invalid {
-  background: #3d2f3a;
-  box-shadow: 0 0 8px #ff4d6d;
-  color: #ff9ca7;
+input.invalid, select.invalid {
+  border-color: #ff6b6b;
+  animation: shake 0.3s ease-in-out;
 }
 
 .error-msg {
-  font-size: 0.85rem;
-  color: #ff4d6d;
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+label {
+  color: #a0a0a0;
+  font-size: 0.95rem;
   font-weight: 600;
-  margin-top: -1rem;
 }
 
 button {
-  padding: 1rem;
+  padding: 0.875rem;
+  background: linear-gradient(135deg, #00ffc1, #00d4aa);
+  color: #141926;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(90deg, #00ffc1, #00bfa6);
-  color: #101010;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 1.1rem;
   cursor: pointer;
-  box-shadow: 0 6px 20px #00ffc1aa;
-  transition: transform 0.2s ease, background 0.3s ease;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
 }
 
-button:hover:enabled {
-  background: linear-gradient(90deg, #00bfa6, #00ffc1);
-  transform: scale(1.04);
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 193, 0.4);
 }
 
 button:disabled {
-  background: #555759;
-  color: #bcbcbc;
+  opacity: 0.5;
   cursor: not-allowed;
-  box-shadow: none;
+  transform: none;
 }
 
 .login-text {
-  margin-top: 1.5rem;
   text-align: center;
+  margin-top: 1.5rem;
+  color: #888;
   font-size: 0.95rem;
-  color: #ccc;
 }
 
 .login-link {
   color: #00ffc1;
-  font-weight: 700;
-  margin-left: 0.4rem;
   text-decoration: none;
+  font-weight: 600;
 }
 
 .login-link:hover {
   text-decoration: underline;
-  color: #00e0b8;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+/* ✅ NUEVOS: Estilos específicos para el selector de rol */
+.form-group select {
+  cursor: pointer;
 }
 
-/* Select dropdown icon */
-.register-form select {
-  background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='%23999' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1.2rem;
-  padding-right: 2.5rem;
+.form-group select option {
+  background: #1a1d35;
+  color: #ffffff;
+  padding: 0.5rem;
+}
+
+.form-group label:not(.sr-only) {
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Resaltar el selector de rol */
+#rol {
+  border-color: #00ffc1;
+  background: linear-gradient(135deg, #1a1d35, #1e2142);
+}
+
+#rol:focus {
+  border-color: #00ffc1;
+  box-shadow: 0 0 0 3px rgba(0, 255, 193, 0.2);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 </style>
