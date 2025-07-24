@@ -27,7 +27,6 @@
       <AdminFields v-if="view === 'fields'" />
       <AdminDivisions v-if="view === 'divisions'" />
       <AdminUsers v-if="view === 'users'" />
-
     </div>
   </div>
 </template>
@@ -49,7 +48,6 @@ import AdminStats from '../pages/admin/AdminStats.vue'
 import AdminFields from '../pages/admin/AdminFields.vue'
 import AdminDivisions from '../pages/admin/AdminDivisions.vue'
 import AdminUsers from '../pages/admin/AdminUsers.vue'
-
 import instance from '@/plugins/axios'
 
 const view = ref('dashboard')
@@ -63,141 +61,55 @@ const sections = [
   { label: 'Resultados', view: 'results' },
   { label: 'Resultados de Partidos', view: 'matchResults' },
   { label: 'Noticias', view: 'news' },
-<<<<<<< HEAD
-  { label: 'Posiciones', view: 'standings' }
-=======
   { label: 'Posiciones', view: 'standings' },
   { label: 'Estadísticas', view: 'stats' },
   { label: 'Campos', view: 'fields' },
   { label: 'Divisiones', view: 'divisions' },
-  { label: 'Usuarios', view: 'users' },
-  { label: 'Perfil', view: 'profile' }
->>>>>>> be3c5c2e12ad95fe75c500b25578722ec8fe9ebf
+  { label: 'Usuarios', view: 'users' }
 ]
-
-// Perfil y preferencias
-const user = ref(null)
-const prefs = ref({ theme: 'Claro', font: 'Arial', mainColor: '#00ffc1' })
-const csrfToken = ref('')
-
-const fetchProfile = async () => {
-  try {
-    const res = await instance.get('/auth/profile')
-    user.value = res.data.user
-  } catch {
-    Swal.fire('Error', 'No se pudo obtener el perfil', 'error')
-  }
-}
-const fetchPrefs = async () => {
-  try {
-    const res = await instance.get('/auth/preferences')
-    if (res.data && res.data.preferences) prefs.value = res.data.preferences
-  } catch {
-    Swal.fire('Error', 'No se pudieron obtener las preferencias', 'error')
-  }
-}
-const fetchCsrfToken = async () => {
-  const res = await instance.get('/api/csrf-token', { withCredentials: true })
-  csrfToken.value = res.data.csrfToken
-  instance.defaults.headers['X-CSRF-Token'] = csrfToken.value
-}
-const savePrefs = async () => {
-  try {
-    await instance.post('/auth/preferences', prefs.value, {
-      headers: { 'X-CSRF-Token': csrfToken.value },
-      withCredentials: true
-    })
-    Swal.fire('Guardado', 'Preferencias actualizadas', 'success')
-  } catch {
-    Swal.fire('Error', 'No se pudieron guardar las preferencias', 'error')
-  }
-}
-
-onMounted(async () => {
-  await fetchCsrfToken()
-  await fetchProfile()
-  await fetchPrefs()
-})
 </script>
 
 <style scoped>
 .admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 2rem;
 }
 
 .admin-title {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
   color: #2d3748;
 }
 
 .admin-nav {
   display: flex;
-  gap: 0.5rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  justify-content: center;
 }
 
 .admin-nav button {
   padding: 0.5rem 1rem;
-  background: #2d3748;
-  color: white;
   border: none;
-  border-radius: 6px;
+  background: #e2e8f0;
+  border-radius: 0.375rem;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.2s;
 }
 
-.admin-nav button:hover {
-  background: #4a5568;
-}
-
+.admin-nav button:hover,
 .admin-nav button.active {
-  background: #63b3ed;
-  color: #1a202c;
-  font-weight: bold;
+  background: #3182ce;
+  color: white;
 }
 
 .admin-section {
-  background-color: #f7fafc;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.prefs-form {
-  margin-top: 1rem;
   background: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.prefs-form label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.prefs-form select,
-.prefs-form input {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.prefs-form button {
-  padding: 0.5rem 1rem;
-  background: #2d3748;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.prefs-form button:hover {
-  background: #4a5568;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 </style>
