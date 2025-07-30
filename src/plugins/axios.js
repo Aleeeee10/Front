@@ -2,7 +2,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000', // o tu base de API
+  baseURL: 'http://localhost:2000', // o tu base de API
   withCredentials: true // Importante para cookies y CSRF
 })
 

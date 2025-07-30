@@ -19,6 +19,17 @@ import UserProfile from '@/pages/UserProfile.vue'
 // Componentes de admin
 import Dashboard from '@/pages/admin/Dashboard.vue'
 import Admin from '@/pages/Admin.vue'
+import AdminUsers from '@/pages/admin/AdminUsers.vue'
+import AdminTeams from '@/pages/admin/AdminTeams.vue'
+import AdminPlayers from '@/pages/admin/AdminPlayers.vue'
+import AdminMatches from '@/pages/admin/AdminMatches.vue'
+import AdminReferees from '@/pages/admin/AdminReferees.vue'
+import AdminResults from '@/pages/admin/AdminResults.vue'
+import AdminStandings from '@/pages/admin/AdminStandings.vue'
+import AdminStats from '@/pages/admin/AdminStats.vue'
+import AdminFields from '@/pages/admin/AdminFields.vue'
+import AdminDivisions from '@/pages/admin/AdminDivisions.vue'
+import AdminNews from '@/pages/admin/AdminNews.vue'
 
 const routes = [
   {
@@ -108,6 +119,77 @@ const routes = [
     name: 'AdminDashboard',
     component: Dashboard,
     beforeEnter: requireAdmin // ✅ Solo administradores
+  },
+  // 👥 Gestión de Usuarios
+  {
+    path: '/admin/users',
+    name: 'AdminUsers',
+    component: AdminUsers,
+    beforeEnter: requireAdmin
+  },
+  // ⚽ Gestión Deportiva
+  {
+    path: '/admin/teams',
+    name: 'AdminTeams',
+    component: AdminTeams,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/players',
+    name: 'AdminPlayers',
+    component: AdminPlayers,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/matches',
+    name: 'AdminMatches',
+    component: AdminMatches,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/referees',
+    name: 'AdminReferees',
+    component: AdminReferees,
+    beforeEnter: requireAdmin
+  },
+  // 📊 Resultados y Estadísticas
+  {
+    path: '/admin/results',
+    name: 'AdminResults',
+    component: AdminResults,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/standings',
+    name: 'AdminStandings',
+    component: AdminStandings,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/stats',
+    name: 'AdminStats',
+    component: AdminStats,
+    beforeEnter: requireAdmin
+  },
+  // 🏟️ Infraestructura
+  {
+    path: '/admin/fields',
+    name: 'AdminFields',
+    component: AdminFields,
+    beforeEnter: requireAdmin
+  },
+  {
+    path: '/admin/divisions',
+    name: 'AdminDivisions',
+    component: AdminDivisions,
+    beforeEnter: requireAdmin
+  },
+  // 📰 Contenido
+  {
+    path: '/admin/news',
+    name: 'AdminNews',
+    component: AdminNews,
+    beforeEnter: requireAdmin
   }
 ]
 

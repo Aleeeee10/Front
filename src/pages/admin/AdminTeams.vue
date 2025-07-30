@@ -22,9 +22,12 @@
         required
         class="flex-1 min-w-[200px] p-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
       >
-        <option disabled value="">División</option>
-        <option>Primera División</option>
-        <option>Segunda División</option>
+        <option disabled value="">Entrenador</option>
+        <option>Pep Guardiola</option>
+        <option>Jürgen Klopp</option>
+        <option>Carlo Ancelotti</option>
+        <option>Diego Simeone</option>
+        <option>Xavi Hernández</option>
       </select>
 
       <!-- Botones -->
@@ -53,7 +56,7 @@
             <th class="p-3 border">ID</th>
             <th class="p-3 border">Logo</th>
             <th class="p-3 border">Nombre</th>
-            <th class="p-3 border">División</th>
+            <th class="p-3 border">Entrenador</th>
             <th class="p-3 border">Acciones</th>
           </tr>
         </thead>
@@ -62,13 +65,14 @@
             <td class="p-3">{{ team.id }}</td>
             <td class="p-3">
               <img
-                :src="team.logo_url"
+                :src="team.logo || 'https://via.placeholder.com/40'"
                 alt="logo"
                 class="w-10 h-10 object-contain mx-auto"
+                @error="$event.target.src='https://via.placeholder.com/40'"
               />
             </td>
-            <td class="p-3">{{ team.name }}</td>
-            <td class="p-3">{{ team.division }}</td>
+            <td class="p-3">{{ team.nombre }}</td>
+            <td class="p-3">{{ team.entrenador || 'Sin entrenador' }}</td>
             <td class="p-3 space-x-2">
               <button @click="editTeam(team)" class="text-blue-600 hover:text-blue-800 text-lg">✏️</button>
               <button @click="deleteTeam(team.id)" class="text-red-600 hover:text-red-800 text-lg">🗑️</button>
@@ -105,28 +109,43 @@ const fetchCsrfToken = async () => {
 
 const fetchTeams = async () => {
   try {
-    const res = await instance.get('/teams', {
+    console.log('🔍 Obteniendo equipos...')
+    const res = await instance.get('/teams/all', {
       headers: {
         'X-CSRF-Token': csrfToken.value
       }
     })
+    console.log('✅ Equipos obtenidos:', res.data)
     teams.value = res.data
   } catch (err) {
+    console.error('❌ Error al obtener equipos:', err)
     Swal.fire('Error', 'No se pudieron cargar los equipos', 'error')
   }
 }
 
 const handleSubmit = async () => {
   try {
+    console.log('🚀 Enviando datos del equipo:', form.value)
+    
     if (editing.value) {
-      await instance.put(`/teams/${form.value.id}`, form.value, {
+      console.log('✏️ Actualizando equipo ID:', form.value.id)
+      await instance.put(`/teams/update/${form.value.id}`, {
+        nombre: form.value.name,
+        logo: form.value.logo_url,
+        entrenador: form.value.division // Temporalmente usando division como entrenador
+      }, {
         headers: {
           'X-CSRF-Token': csrfToken.value
         }
       })
       Swal.fire('Actualizado', 'Equipo actualizado correctamente', 'success')
     } else {
-      await instance.post('/teams', form.value, {
+      console.log('➕ Creando nuevo equipo')
+      await instance.post('/teams/create', {
+        nombre: form.value.name,
+        logo: form.value.logo_url,
+        entrenador: form.value.division // Temporalmente usando division como entrenador
+      }, {
         headers: {
           'X-CSRF-Token': csrfToken.value
         }
@@ -136,19 +155,27 @@ const handleSubmit = async () => {
     resetForm()
     fetchTeams()
   } catch (err) {
+    console.error('❌ Error al guardar equipo:', err)
     Swal.fire('Error', 'No se pudo guardar el equipo', 'error')
   }
 }
 
 const editTeam = (team) => {
-  form.value = { ...team }
+  console.log('✏️ Editando equipo:', team)
+  form.value = {
+    id: team.id,
+    name: team.nombre,
+    logo_url: team.logo,
+    division: team.entrenador || ''
+  }
   editing.value = true
 }
 
 const deleteTeam = async (id) => {
   if (confirm('¿Estás seguro de eliminar este equipo?')) {
     try {
-      await instance.delete(`/teams/${id}`, {
+      console.log('🗑️ Eliminando equipo ID:', id)
+      await instance.delete(`/teams/delete/${id}`, {
         headers: {
           'X-CSRF-Token': csrfToken.value
         }
@@ -156,6 +183,7 @@ const deleteTeam = async (id) => {
       fetchTeams()
       Swal.fire('Eliminado', 'Equipo eliminado correctamente', 'success')
     } catch (err) {
+      console.error('❌ Error al eliminar equipo:', err)
       Swal.fire('Error', 'No se pudo eliminar el equipo', 'error')
     }
   }

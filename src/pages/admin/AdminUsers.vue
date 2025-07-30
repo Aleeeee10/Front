@@ -10,7 +10,7 @@
 
       <select v-model="form.idRol" required>
         <option disabled value="">Selecciona un rol</option>
-        <option v-for="rol in roles" :key="rol.id" :value="rol.id">{{ rol.name }}</option>
+        <option v-for="rol in roles" :key="rol.idRoles" :value="rol.idRoles">{{ rol.nameRole }}</option>
       </select>
 
       <div class="form-buttons">
@@ -38,7 +38,7 @@
           <td>{{ user.nameUser }}</td>
           <td>{{ user.usernameUser || '-' }}</td>
           <td>{{ user.emailUser }}</td>
-          <td>{{ user.rol?.name || 'Sin rol' }}</td>
+          <td>{{ user.roleName || 'Sin rol' }}</td>
           <td>
             <button @click="editUser(user)" class="btn-icon">✏️</button>
             <button @click="deleteUser(user.idUsers)" class="btn-icon">🗑️</button>
@@ -75,48 +75,76 @@ const fetchCsrfToken = async () => {
 }
 
 const fetchUsers = async () => {
-  const res = await instance.get('/users')
-  users.value = res.data
+  try {
+    console.log('🔍 Obteniendo usuarios...')
+    const res = await instance.get('/users/all')
+    console.log('✅ Usuarios obtenidos:', res.data)
+    users.value = res.data
+  } catch (error) {
+    console.error('❌ Error al obtener usuarios:', error)
+    Swal.fire('Error', 'No se pudieron cargar los usuarios', 'error')
+  }
 }
 
 const fetchRoles = async () => {
-  const res = await instance.get('/roles')
-  roles.value = res.data
+  try {
+    console.log('🔍 Obteniendo roles...')
+    const res = await instance.get('/roles/lista')
+    console.log('✅ Roles obtenidos:', res.data)
+    roles.value = res.data
+  } catch (error) {
+    console.error('❌ Error al obtener roles:', error)
+    Swal.fire('Error', 'No se pudieron cargar los roles', 'error')
+  }
 }
 
 const handleSubmit = async () => {
   const payload = {
-    username: form.value.usernameUser,
+    nombre: form.value.nameUser,
     email: form.value.emailUser,
-    password: form.value.passwordUser,
-    roleId: form.value.idRol,
-    nameUser: form.value.nameUser
+    contraseña: form.value.passwordUser,
+    rolId: form.value.idRol,
+    avatar: form.value.avatar || null
   }
 
   try {
+    console.log('📤 Enviando payload:', payload)
+    console.log('🔧 Modo edición:', editing.value)
+    
     if (editing.value) {
-      await instance.put(`/users/${form.value.idUsers}`, payload)
+      console.log('✏️ Actualizando usuario ID:', form.value.idUsers)
+      const response = await instance.put(`/users/update/${form.value.idUsers}`, payload)
+      console.log('✅ Respuesta de actualización:', response.data)
       Swal.fire('Actualizado', 'Usuario actualizado correctamente', 'success')
     } else {
-      await instance.post('/users', payload)
+      console.log('➕ Creando nuevo usuario')
+      const response = await instance.post('/users/create', payload)
+      console.log('✅ Usuario creado:', response.data)
       Swal.fire('Creado', 'Usuario creado correctamente', 'success')
     }
+    
     resetForm()
-    fetchUsers()
+    console.log('🔄 Recargando lista de usuarios...')
+    await fetchUsers()
   } catch (err) {
-    console.error(err)
-    Swal.fire('Error', 'No se pudo guardar el usuario', 'error')
+    console.error('❌ Error completo:', err)
+    console.error('❌ Respuesta del servidor:', err.response?.data)
+    console.error('❌ Status:', err.response?.status)
+    
+    const errorMessage = err.response?.data?.error || err.response?.data?.message || 'No se pudo guardar el usuario'
+    Swal.fire('Error', errorMessage, 'error')
   }
 }
 
 const editUser = (user) => {
+  console.log('✏️ Editando usuario:', user)
   form.value = {
     idUsers: user.idUsers,
     nameUser: user.nameUser,
     usernameUser: user.usernameUser,
     emailUser: user.emailUser,
     passwordUser: '',
-    idRol: user.idRol
+    idRol: user.idRole // ✅ Usar idRole del usuario
   }
   editing.value = true
 }
@@ -124,11 +152,14 @@ const editUser = (user) => {
 const deleteUser = async (id) => {
   if (confirm('¿Estás seguro de eliminar este usuario?')) {
     try {
-      await instance.delete(`/users/${id}`)
-      fetchUsers()
+      console.log('🗑️ Eliminando usuario ID:', id)
+      await instance.delete(`/users/delete/${id}`)
+      await fetchUsers()
       Swal.fire('Eliminado', 'Usuario eliminado correctamente', 'success')
     } catch (err) {
-      Swal.fire('Error', 'No se pudo eliminar el usuario', 'error')
+      console.error('❌ Error al eliminar usuario:', err)
+      const errorMessage = err.response?.data?.message || 'No se pudo eliminar el usuario'
+      Swal.fire('Error', errorMessage, 'error')
     }
   }
 }
@@ -148,9 +179,24 @@ const resetForm = () => {
 }
 
 onMounted(async () => {
-  await fetchCsrfToken()
-  await fetchUsers()
-  await fetchRoles()
+  console.log('🔄 Iniciando AdminUsers.vue...')
+  
+  try {
+    // Comentamos temporalmente el CSRF token
+    // console.log('🔑 Obteniendo token CSRF...')
+    // await fetchCsrfToken()
+    
+    console.log('👥 Cargando usuarios...')
+    await fetchUsers()
+    
+    console.log('🔐 Cargando roles...')
+    await fetchRoles()
+    
+    console.log('✅ AdminUsers.vue iniciado correctamente')
+  } catch (error) {
+    console.error('❌ Error al inicializar AdminUsers.vue:', error)
+    Swal.fire('Error', 'Error al cargar los datos iniciales', 'error')
+  }
 })
 </script>
 
